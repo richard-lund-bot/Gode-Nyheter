@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="104" fill="#2f5d43"/>
+  <text x="246" y="352" text-anchor="middle" font-family="Arial Black, Helvetica Neue, Arial, sans-serif" font-weight="900" font-size="230" letter-spacing="-16" fill="#fff">GN</text>
+  <g transform="translate(438 118)" fill="#fff" stroke="#fff" stroke-width="12" stroke-linecap="round">
+    <circle r="22" stroke="none"/>
+    <path d="M0 -52v14M0 38v14M-52 0h14M38 0h14M-37 -37l10 10M27 27l10 10M-37 37l10 -10M27 -27l10 -10"/>
+  </g>
+</svg>

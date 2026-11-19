@@ -1,0 +1,7 @@
+[
+  {"id": "drammen", "name": "Drammen", "lat": 59.744, "lon": 10.204, "time": "11:00", "news_query": "Drammen"},
+  {"id": "lier", "name": "Lier", "lat": 59.786, "lon": 10.243, "time": "11:00", "news_query": "Lier kommune OR Lierbyen OR Lierskogen OR Tranby"},
+  {"id": "ovre-eiker", "name": "Øvre Eiker", "lat": 59.77, "lon": 9.913, "time": "11:00", "news_query": "\"Øvre Eiker\" OR Hokksund OR Vestfossen"},
+  {"id": "kongsberg", "name": "Kongsberg", "lat": 59.668, "lon": 9.65, "time": "11:00", "news_query": "Kongsberg"},
+  {"id": "asker", "name": "Asker", "lat": 59.833, "lon": 10.435, "time": "11:00", "news_query": "Asker"}
+]

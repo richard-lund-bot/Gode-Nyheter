@@ -1,0 +1,14 @@
+{
+  "name": "GN – Gode nyheter",
+  "short_name": "GN",
+  "description": "Bare gode nyheter – lokalt, nasjonalt og fra verden.",
+  "lang": "no",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f1e7",
+  "theme_color": "#2f5d43",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
