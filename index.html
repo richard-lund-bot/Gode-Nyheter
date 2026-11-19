@@ -349,8 +349,10 @@
 
 <script>
 // ===== Konfigurasjon =====
-const SUPABASE_URL = '';          // f.eks. 'https://abcd1234.supabase.co'
-const SUPABASE_ANON_KEY = '';     // «anon public»-nøkkelen
+const SUPABASE_URL = 'https://ggaqbsetmoxijdphbvui.supabase.co';
+// «Publishable»-nøkkelen (sb_publishable_…). Den er laget for å ligge åpent i nettsiden – RLS i databasen styrer hva den får lese.
+const SUPABASE_ANON_KEY = 'sb_publishable_VKUYFuKaKPuQLvMhtL-_wg_uC775QdR';
+const REFRESH_MIN = 5;            // hent nye saker når du kommer tilbake til siden, men ikke oftere enn dette
 const SHOW_SOURCE_IMAGES = true;  // false = bare egne illustrasjoner (se README om bilderettigheter)
 // Områder (hentes fra regions.json, samme fil som innsamlingsjobben bruker; dette er reserve)
 let REGIONS = [{ id: 'drammen', name: 'Drammen', lat: 59.744, lon: 10.204 }];
@@ -470,7 +472,8 @@ const NEAR_BOOST = { 0: 4, 1: 1.5, 2: 0, 3: -6 };
 const rank = (it) => it.score * 3 - (Date.now() - new Date(it.published_at)) / 3600e3 * 0.25 + (NEAR_BOOST[nearTier(it)] ?? 0);
 
 // ---------- Data ----------
-const sbHeaders = () => ({ apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` });
+// Nøkkelen sendes bare i apikey-headeren: publishable-nøkler er ikke JWT og skal ikke stå i Authorization.
+const sbHeaders = () => ({ apikey: SUPABASE_ANON_KEY });
 async function loadRegions() {
   try { const r = await fetch('regions.json'); if (r.ok) REGIONS = await r.json(); } catch {}
 }
@@ -490,18 +493,21 @@ function refreshLocal() {
   const lys = document.querySelector('.lys'); if (lys) lys.outerHTML = lysModule();
   const tur = document.querySelector('.tur'); if (tur) tur.outerHTML = turModule(); else render();
 }
-async function load() {
-  $('feed').innerHTML = '<div class="loading">Laster …</div>';
+let loadedAt = 0;
+// refresh = true: hent på nytt i bakgrunnen og behold det som står på skjermen til de nye sakene er klare
+async function load(refresh = false) {
+  if (!refresh) $('feed').innerHTML = '<div class="loading">Laster …</div>';
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) { state.demo = true; state.items = DEMO; await loadLocal(); return render(); }
-  loadLocal().then(refreshLocal);
+  const local = loadLocal();
   try {
     const url = `${SUPABASE_URL}/rest/v1/articles?select=id,story_id,url,source,source_domain,area,pinned_until,kicker,title_no,summary_no,image_url,score,tone,category,region,published_at,glad_count`
       + `&score=gte.6&order=published_at.desc&limit=300`;
-    const res = await fetch(url, { headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } });
+    const res = await fetch(url, { headers: sbHeaders() });
     if (!res.ok) throw new Error(res.status);
-    state.items = await res.json(); state.demo = false; render();
+    state.items = await res.json(); state.demo = false; loadedAt = Date.now();
+    await local; render();
   } catch {
-    $('feed').innerHTML = '<div class="empty">Fikk ikke lastet saker.</div>';
+    if (!refresh) $('feed').innerHTML = '<div class="empty">Fikk ikke lastet saker.</div>';
   }
 }
 
@@ -516,7 +522,7 @@ async function glad(id) {
   if (!state.demo) {
     fetch(`${SUPABASE_URL}/rest/v1/rpc/glad`, {
       method: 'POST', body: JSON.stringify({ article_id: Number(id) }),
-      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}`, 'Content-Type': 'application/json' },
+      headers: { ...sbHeaders(), 'Content-Type': 'application/json' },
     }).catch(() => {});
   }
 }
@@ -1000,7 +1006,7 @@ document.addEventListener('click', (e) => {
   else return;
   if (inDrawer) setMenu(false);
 });
-document.addEventListener('visibilitychange', () => { if (!document.hidden && !state.demo) load(); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden && !state.demo && Date.now() - loadedAt > REFRESH_MIN * 60e3) load(true); });
 
 // ---------- Eksempelsaker (vises bare før Supabase er koblet til) ----------
 // Bilder fra Wikimedia Commons (frie lisenser) – kreditert på bildet.
