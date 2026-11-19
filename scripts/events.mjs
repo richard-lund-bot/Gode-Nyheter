@@ -9,6 +9,7 @@ export const VERIFIED_SOURCES = {
   'ut.no': (u) => /^\/turforslag\/\d+/.test(u.pathname),
 };
 const MIN_SPOTS = 6;          // let etter flere når et område har færre verifiserte turer
+const SEARCH_EVERY_H = 24;    // … men høyst så ofte per område. Hvert nettsøk koster, og jobben kjører hver halvtime.
 const REVERIFY_DAYS = 30;     // sjekk lenkene på nytt med jevne mellomrom
 const AVOID_DAYS = 21;        // ikke gjenta samme tur innen dette antall dager
 const CAPACITY = 30;          // når en tur har så mange deltakere, foreslås neste tur i tillegg
@@ -106,9 +107,15 @@ export async function discoverSpots(db, ai, region) {
   const { data: spots, error } = await db.from('spots').select('url, approved').eq('region', region.id);
   if (error) throw error;
   if (spots.filter((s) => s.approved).length >= MIN_SPOTS) return 0;
+  // Noter forsøket før vi søker, så et område som aldri når MIN_SPOTS ikke utløser et nytt nettsøk hver halvtime
+  const key = `spot-search:${region.id}`;
+  const { data: last } = await db.from('local_info').select('updated_at').eq('key', key).maybeSingle();
+  if (last && Date.now() - new Date(last.updated_at).getTime() < SEARCH_EVERY_H * 3600e3) return 0;
+  const { error: e1 } = await db.from('local_info').upsert({ key, data: {}, updated_at: new Date().toISOString() });
+  if (e1) throw e1;
   const have = new Set(spots.map((s) => s.url));
   const res = await ai.messages.create({
-    model: SEARCH_MODEL, max_tokens: 2000, system: FIND_SYSTEM,
+    model: SEARCH_MODEL, max_tokens: 8000, system: FIND_SYSTEM,
     tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 4, allowed_domains: Object.keys(VERIFIED_SOURCES) }],
     messages: [{ role: 'user', content: `Område: ${region.name}. Finn inntil 6 turforslag. Har allerede: ${[...have].join(', ') || 'ingen'}.` }],
   });
@@ -165,7 +172,7 @@ export async function planEvents(db, ai, regions, weatherByRegion) {
 
     let plan;
     try {
-      const res = await ai.messages.create({ model: MODEL, max_tokens: 500, system: PLAN_SYSTEM, messages: [{ role: 'user', content: JSON.stringify({
+      const res = await ai.messages.create({ model: MODEL, max_tokens: 4000, system: PLAN_SYSTEM, messages: [{ role: 'user', content: JSON.stringify({
         område: region.name, dag: day.date, vær: { type: kind, symbol: day.symbol, tmin: day.tmin, tmax: day.tmax, nedbør_mm: day.precip },
         turer: candidates.map((s, i) => ({ i, navn: s.name, grad: s.difficulty, km: s.distance_km, timer: s.duration_h })),
       }) }] });

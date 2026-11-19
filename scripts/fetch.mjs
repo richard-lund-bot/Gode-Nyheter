@@ -39,7 +39,7 @@ const parser = new Parser({
   headers: { 'User-Agent': 'GodeNyheter/0.1 (RSS-aggregator)' },
   customFields: {
     item: [
-      'source',
+      ['source', 'sourceEl', { keepArray: true }],   // hele elementet, ikke bare teksten – url-attributtet gir avisas domene
       ['media:content', 'mediaContent', { keepArray: true }],
       ['media:thumbnail', 'mediaThumbnail', { keepArray: true }],
       ['content:encoded', 'contentEncoded'],
@@ -132,7 +132,7 @@ async function collect() {
       const feed = await parser.parseURL(s.url);
       let n = 0;
       for (const it of feed.items || []) {
-        if (!it.link || !it.title) continue;
+        if (!it.link || !it.title || !/^https?:\/\//i.test(it.link)) continue;   // lenken blir href på nettsiden
         const pub = it.isoDate ? Date.parse(it.isoDate) : Date.now();
         if (pub < cutoff) continue;
 
@@ -141,12 +141,13 @@ async function collect() {
         let domain = host(it.link);
         if (s.aggregator) {
           // Google Nyheter: «Tittel - Avisnavn» → bruk egentlig kilde og dens domene
-          const src = typeof it.source === 'string' ? it.source : it.source?._;
+          const el = it.sourceEl?.[0];   // <source url="https://avis.no">Avisnavn</source>
+          const src = typeof el === 'string' ? el : el?._;
           if (src) {
             sourceName = src.trim();
             title = title.replace(new RegExp(`\\s+-\\s+${escapeRe(sourceName)}$`), '');
           }
-          domain = host(it.source?.$?.url);
+          domain = host(el?.$?.url);
         }
         out.push({
           url: normUrl(it.link),
@@ -181,10 +182,16 @@ async function dedupe(items) {
 
   if (db) {
     const since = new Date(Date.now() - 4 * 864e5).toISOString();
-    const { data, error } = await db.from('articles')
-      .select('url, original_title, source').gte('created_at', since).limit(10000);
-    if (error) throw error;
-    data.forEach((r) => { seenUrl.add(r.url); seenTitle.add(`${r.source}|${titleKey(r.original_title)}`); });
+    // Supabase gir maks 1000 rader per kall, så vi blar til alt er hentet. Ellers ville saker vi allerede har,
+    // blitt sendt til Claude på nytt hver halvtime når tabellen vokser.
+    for (let from = 0; ;) {
+      const { data, error } = await db.from('articles')
+        .select('url, original_title, source').gte('created_at', since).order('id').range(from, from + 999);
+      if (error) throw error;
+      if (!data.length) break;
+      data.forEach((r) => { seenUrl.add(r.url); seenTitle.add(`${r.source}|${titleKey(r.original_title)}`); });
+      from += data.length;
+    }
   }
 
   const fresh = [];
@@ -248,7 +255,7 @@ async function classifyBatch(batch, leads) {
   };
   const res = await ai.messages.create({
     model: MODEL,
-    max_tokens: 4096,
+    max_tokens: 16000,   // romslig: modellen tenker før den svarer, og tenkingen teller med. Du betaler bare for det som brukes.
     system: SYSTEM,
     messages: [{ role: 'user', content: JSON.stringify(payload) }],
   });
@@ -291,7 +298,9 @@ if (!DRY_RUN) {
     const weather = await updateWeather(db, regions, process.env.MET_CONTACT);
     for (const r of regions) {
       try {
-        const found = await discoverSpots(db, ai, r);
+        let found = 0;
+        // Feiler søket (f.eks. fordi nettsøk ikke er slått på), sjekkes turene vi allerede har likevel
+        try { found = await discoverSpots(db, ai, r); } catch (e) { console.warn(`Tursøk ${r.name}: ${e.message}`); }
         const { checked, approved } = await verifySpots(db, r.id);
         if (found || checked) console.log(`✓ Turer ${r.name}: ${found} nye funnet på ut.no, ${checked} sjekket, ${approved} godkjent`);
       } catch (e) { console.warn(`Turer ${r.name}: ${e.message}`); }

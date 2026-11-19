@@ -16,10 +16,12 @@ GitHub Pages
 3. **GitHub:** Opprett et repo (gjerne offentlig, siden Actions-minutter da er gratis) og push filene.
    Legg inn tre hemmeligheter under Settings → Secrets and variables → Actions:
    - `SUPABASE_URL`: Project Settings → API → Project URL
-   - `SUPABASE_SERVICE_KEY`: «service_role»-nøkkelen (**aldri** i nettsiden)
+   - `SUPABASE_SERVICE_KEY`: en **secret**-nøkkel (`sb_secret_…`) fra Project Settings → API Keys (**aldri** i nettsiden).
+     Den gamle «service_role»-nøkkelen virker også, men Supabase slår av de gamle nøklene ved utgangen av 2026.
    - `ANTHROPIC_API_KEY`
 4. **Første kjøring:** Gå til Actions → «Hent gode nyheter» → Run workflow. Loggen viser ✓/✗ per feed.
-5. **Nettsiden:** Lim inn Project URL og **anon**-nøkkelen øverst i `<script>` i `index.html`.
+5. **Nettsiden:** Project URL og **publishable**-nøkkelen (`sb_publishable_…`) står øverst i `<script>` i `index.html`
+   (allerede fylt inn for prosjektet `gode-nyheter`). Nøkkelen er laget for å ligge åpent; RLS styrer hva den får lese.
    Slå på GitHub Pages (Settings → Pages → Deploy from branch → main).
 
 Uten nøkler viser `index.html` eksempelsaker, slik at du kan jobbe med designet.
@@ -81,7 +83,7 @@ Uten nøkler viser `index.html` eksempelsaker, slik at du kan jobbe med designet
 **Områder:** `regions.json` (navn og koordinater). Brukeren velger område i menyen, trykker «Finn nærmeste» (GPS i nettleseren) eller skriver **postnummer**. Postnummeret slås opp i Kartverkets åpne adresse-API (ws.geonorge.no) og gjøres om til nærmeste område. Bare området lagres, ikke posisjon eller postnummer.
 
 **Bare verifiserte turer (ut.no):**
-1. Har et område færre enn 6 godkjente turer, søker Claude etter turforslag med nettsøk som er **låst til ut.no** (`VERIFIED_SOURCES` i `scripts/events.mjs`). Bare lenker som faktisk dukket opp i søkeresultatene, tas med. Lenker modellen skriver selv, avvises.
+1. Har et område færre enn 6 godkjente turer, søker Claude etter turforslag med nettsøk som er **låst til ut.no** (`VERIFIED_SOURCES` i `scripts/events.mjs`). Bare lenker som faktisk dukket opp i søkeresultatene, tas med. Lenker modellen skriver selv, avvises. Det søkes høyst én gang i døgnet per område (`SEARCH_EVERY_H`), siden hvert nettsøk koster.
 2. Jobben åpner hver turside selv og sjekker at den finnes. Fra siden hentes navn, vanskelighetsgrad, type, lengde, tid og sesong.
 3. Turen godkjennes automatisk bare hvis den er en **enkel eller middels fottur eller skitur på maks 4 timer**. Krevende turer, padling, klatring osv. brukes ikke til åpne fellesturer. Grunnen står i `spots.note`.
 4. Alle turer sjekkes på nytt hver 30. dag. Er siden borte, mister turen godkjenningen.
