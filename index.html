@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="no" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GN – Gode nyheter</title>
+<meta name="description" content="Bare gode nyheter – lokalt, nasjonalt og fra verden.">
+<meta name="theme-color" content="#2f5d43">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<style>
+  :root {
+    --bg: #f1eee8; --card: #ffffff; --ink: #1b1916; --muted: #6f675d; --line: #e4ded4; --well: #e9e5dd;
+    --brand: #2f5d43; --sun: #f2b544;
+    /* Humørkoder */
+    --m-sol: #c98400;  --m-sol-bg: #f6bd3f;
+    --m-lys: #2b8a4f;  --m-lys-bg: #2f5d43;
+    --m-los: #2c6bd0;  --m-los-bg: #234a8a;
+    --m-hjerte: #d23e5d; --m-hjerte-bg: #c23c58;
+    --head: "Avenir Next Condensed", "Roboto Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #121210; --card: #1d1c19; --ink: #f1ece4; --muted: #a39a8d; --line: #2e2c28; --well: #26241f;
+      --brand: #24432f; --m-sol: #f2b544; --m-lys: #6cc48c; --m-los: #79a8f2; --m-hjerte: #f07d95; }
+  }
+  :root[data-theme="dark"] { --bg: #121210; --card: #1d1c19; --ink: #f1ece4; --muted: #a39a8d; --line: #2e2c28; --well: #26241f;
+      --brand: #24432f; --m-sol: #f2b544; --m-lys: #6cc48c; --m-los: #79a8f2; --m-hjerte: #f07d95; }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); line-height: 1.4; }
+  body.locked { overflow: hidden; }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; color: inherit; }
+
+  /* ---------- Toppbanner ---------- */
+  .top { position: sticky; top: 0; z-index: 20; background: var(--brand); color: #fff; padding-top: env(safe-area-inset-top); }
+  .bar { max-width: 980px; margin: 0 auto; height: 58px; display: flex; justify-content: space-between; align-items: center; padding: 0 8px 0 16px; }
+  .iconbtn { width: 44px; height: 44px; border: 0; background: none; color: inherit; border-radius: 10px; cursor: pointer; display: grid; place-items: center; }
+  .iconbtn:active { background: rgba(255,255,255,.12); }
+  .logo { display: flex; align-items: center; color: inherit; text-decoration: none; cursor: pointer; }
+  .gn { position: relative; display: inline-flex; align-items: center; color: #fff; padding-right: 10px; }
+  .gn b { font: 900 2.05rem/1 "Arial Black", "Helvetica Neue", Arial, sans-serif; letter-spacing: -.07em; }
+  .gn svg { position: absolute; top: -5px; right: -4px; width: 16px; height: 16px; fill: currentColor; stroke: currentColor; }
+  .drawer-head .gn { color: var(--brand); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .drawer-head .gn { color: var(--ink); } }
+  :root[data-theme="dark"] .drawer-head .gn { color: var(--ink); }
+  .strip { background: var(--card); border-bottom: 1px solid var(--line); position: sticky; top: calc(54px + env(safe-area-inset-top)); z-index: 19; }
+  .strip nav { max-width: 980px; margin: 0 auto; display: flex; gap: 2px; overflow-x: auto; padding: 0 8px; scrollbar-width: none; }
+  .strip nav::-webkit-scrollbar { display: none; }
+  .strip button { flex: none; border: 0; background: none; padding: 12px 10px 9px; font: 700 .9rem var(--sans); color: var(--muted);
+                  border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap; }
+  .strip button[aria-current="true"] { color: var(--ink); border-color: var(--m-hjerte); }
+  .strip .sep { flex: none; width: 1px; background: var(--line); margin: 10px 4px; }
+
+  /* ---------- Sidemeny ---------- */
+  .scrim { position: fixed; inset: 0; background: rgba(0,0,0,.45); opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 40; }
+  .drawer { position: fixed; top: 0; bottom: 0; right: 0; width: min(86vw, 350px); background: var(--card); z-index: 41; transform: translateX(102%);
+            transition: transform .25s ease; overflow-y: auto; padding: calc(12px + env(safe-area-inset-top)) 18px calc(24px + env(safe-area-inset-bottom)); }
+  body.menu-open .scrim { opacity: 1; pointer-events: auto; }
+  body.menu-open .drawer { transform: none; box-shadow: -8px 0 30px rgba(0,0,0,.25); }
+  .drawer-head { display: flex; align-items: center; justify-content: space-between; }
+  .drawer-head .logo { justify-self: start; color: var(--ink); }
+  .drawer h3 { font: 700 .72rem var(--sans); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 22px 0 8px; }
+  .menu-list { list-style: none; margin: 0; padding: 0; }
+  .menu-list button { width: 100%; text-align: left; background: none; border: 0; padding: 11px 6px; font: 700 1.05rem var(--sans);
+                      border-bottom: 1px solid var(--line); cursor: pointer; display: flex; align-items: center; gap: 10px; }
+  .menu-list button[aria-current="true"] { color: var(--m-hjerte); }
+  .menu-list .count { margin-left: auto; color: var(--muted); font-weight: 500; font-size: .85rem; }
+  .menu-list .desc { display: block; font: 400 .8rem var(--sans); color: var(--muted); }
+  .seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; background: var(--well); border-radius: 10px; padding: 3px; gap: 3px; }
+  .seg button { border: 0; background: none; padding: 9px 4px; border-radius: 8px; font: 600 .82rem var(--sans); color: var(--muted); cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--card); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+  .hint { font-size: .8rem; color: var(--muted); margin: 6px 2px 0; }
+  .about { font-size: .88rem; color: var(--muted); line-height: 1.55; }
+
+  /* ---------- Humør-ikoner ---------- */
+  .mi { width: 1em; height: 1em; vertical-align: -.12em; flex: none; }
+  .dot { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: 14px; flex: none; }
+
+  /* ---------- Side ---------- */
+  .page { max-width: 980px; margin: 0 auto; padding: 0 0 calc(30px + env(safe-area-inset-bottom)); }
+  .banner { background: #e6efe7; color: var(--brand); padding: 9px 14px; font-size: .82rem; }
+  .feed { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; padding-top: 0; }
+  .feed > * { min-width: 0; }
+  body { overflow-x: hidden; }
+  .inset { margin: 0 10px; }
+
+  /* Kort */
+  .card { display: block; background: var(--card); position: relative; overflow: hidden; }
+  .inset.card, .inset .card { border-radius: 6px; }
+  .card:active { opacity: .88; }
+  .ph { position: relative; aspect-ratio: 16 / 9; overflow: hidden;
+        background: radial-gradient(circle at 78% 30%, rgba(255,255,255,.35) 0 14%, transparent 15%), linear-gradient(135deg, var(--c1), var(--c2)); }
+  .ph::after { content: attr(data-cat); position: absolute; left: 14px; bottom: 10px; font: 800 1.6rem/1 var(--head); text-transform: uppercase; color: rgba(255,255,255,.28); }
+  .ph img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+  .ph.has-img::after { display: none; }
+  .credit { position: absolute; right: 6px; bottom: 5px; font-size: .62rem; color: rgba(255,255,255,.85); text-shadow: 0 1px 2px rgba(0,0,0,.7); }
+  .accent { position: absolute; left: 0; right: 0; bottom: 0; height: 4px; z-index: 1; }
+  .badge { position: absolute; left: 10px; top: 10px; display: flex; align-items: center; gap: 5px; padding: 4px 9px 4px 7px; border-radius: 99px;
+           font: 700 .72rem var(--sans); color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.25); z-index: 1; }
+  .body { padding: 10px 14px 12px; }
+  .t { font: 800 1.5rem/1.06 var(--head); margin: 0; }
+  .kicker { color: var(--mc); }
+  .sum { margin: 7px 0 0; font-size: .95rem; opacity: .85; }
+  .meta { margin-top: 8px; font-size: .75rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: 2px 6px; align-items: center; }
+  .meta span { white-space: nowrap; }
+  .meta .region { font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--mc); }
+  .glad { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; border: 1.5px solid var(--line); background: var(--card);
+          border-radius: 99px; padding: 3px 9px; font: 700 .75rem var(--sans); color: var(--muted); cursor: pointer; }
+  .glad.on { background: var(--m-sol-bg); border-color: var(--m-sol-bg); color: #3a2400; }
+  .glad.pop { animation: pop .35s ease; }
+  @keyframes pop { 50% { transform: scale(1.25); } }
+
+  .hero .ph { aspect-ratio: 4 / 3; }
+  .hero .t { font-size: 2.2rem; line-height: 1.0; }
+  .hero .body { padding: 12px 14px 16px; }
+  .bigfull .t { font-size: 1.85rem; }
+  .overlay .ph { aspect-ratio: 4 / 5; }
+  .overlay .over { position: absolute; inset: auto 0 0 0; padding: 70px 16px 16px; color: #fff; background: linear-gradient(transparent, rgba(0,0,0,.82)); }
+  .overlay .t { font-size: 2rem; }
+  .overlay .kicker, .overlay .meta .region { color: var(--sun); }
+  .overlay .meta { color: rgba(255,255,255,.8); }
+  .overlay .glad { background: rgba(0,0,0,.35); border-color: rgba(255,255,255,.35); color: #fff; }
+  .overlay .credit { bottom: auto; top: 8px; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .pair .ph { aspect-ratio: 1 / 1; }
+  .pair .body { padding: 8px 10px 10px; }
+  .pair .t { font-size: 1.12rem; line-height: 1.1; }
+  .pair .badge { left: 6px; top: 6px; font-size: .66rem; }
+  .row { display: grid; grid-template-columns: 1fr 116px; border-left: 5px solid var(--mc); }
+  .row .ph { aspect-ratio: auto; height: 100%; min-height: 108px; grid-column: 2; grid-row: 1; }
+  .row .credit, .pair .credit { display: none; }
+  .row .ph::after { font-size: .85rem; left: 8px; bottom: 6px; }
+  .row .body { grid-column: 1; grid-row: 1; padding: 11px 12px 11px 12px; }
+  .row .t { font-size: 1.15rem; line-height: 1.1; }
+  .textcard { background: var(--mbg); color: #fff; padding: 20px 18px 16px; }
+  .textcard.m-sol { color: #2e1f00; }
+  .textcard .t { font-size: 2rem; line-height: 1.02; }
+  .textcard .kicker, .textcard .meta, .textcard .meta .region { color: inherit; opacity: .9; }
+  .textcard .sum { opacity: .9; }
+  .textcard .tc-top { display: flex; align-items: center; gap: 8px; font: 700 .75rem var(--sans); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; opacity: .9; }
+  .textcard .glad { background: rgba(255,255,255,.2); border-color: transparent; color: inherit; }
+
+  /* Kildelogoer */
+  .lg { position: relative; width: 20px; height: 20px; border-radius: 50%; background: hsl(var(--h) 45% 40%); color: #fff; flex: none;
+        display: inline-grid; place-items: center; overflow: hidden; box-shadow: 0 0 0 2px var(--card); }
+  .lg b { font: 800 .55rem var(--sans); letter-spacing: -.02em; }
+  .lg img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #fff; }
+  .src1 { display: inline-flex; align-items: center; gap: 5px; }
+  .srcs { display: inline-flex; align-items: center; }
+  .srcbtn { border: 0; background: none; padding: 0; cursor: pointer; font: inherit; color: inherit; }
+  .srcs .icon + .icon { margin-left: -6px; }
+  .srcs .n { margin-left: 6px; }
+  .readat { display: flex; align-items: flex-start; gap: 8px; margin-top: 10px; font-size: .75rem; color: var(--muted); }
+  .srcs.rich { gap: 6px; flex-wrap: nowrap; flex: 1; min-width: 0; overflow: hidden; }
+  .srcs.rich.open { flex-wrap: wrap; overflow: visible; }
+  .readat .lbl { flex: none; padding-top: 6px; }
+  [hidden] { display: none !important; }
+  .srcs.rich .plus { padding: 3px 11px; font-weight: 800; flex: none; }
+  .plus.sm { margin-left: 6px; border: 1.5px solid var(--line); background: var(--card); border-radius: 99px; padding: 1px 8px;
+             font: 800 .72rem var(--sans); color: var(--ink); cursor: pointer; }
+  .srcmore { display: none; margin-top: 8px; }
+  .srcmore.open { display: block; }
+  .srcmore .srcbtn { font-size: .74rem !important; }
+  .srcs.rich .srcbtn { display: inline-flex; align-items: center; gap: 6px; border: 1.5px solid var(--line); border-radius: 99px;
+                       padding: 3px 11px 3px 3px; font: 700 .78rem var(--sans); color: var(--ink); background: var(--card); }
+  .srcs.rich .srcbtn:active { transform: scale(.96); }
+  .overlay .readat, .textcard .readat { color: inherit; opacity: .95; }
+  .overlay .srcs.rich .srcbtn, .textcard .srcs.rich .srcbtn { background: rgba(255,255,255,.16); border-color: transparent; color: inherit; }
+  .overlay .lg, .textcard .lg { box-shadow: none; }
+  .srcctl { display: flex; gap: 8px; margin-bottom: 4px; }
+  .srcctl button { flex: 1; border: 1px solid var(--line); background: var(--well); border-radius: 8px; padding: 8px; font: 600 .82rem var(--sans); cursor: pointer; }
+  .srclist { list-style: none; margin: 0; padding: 0; }
+  .srclist li { display: flex; align-items: center; gap: 10px; padding: 9px 4px; border-bottom: 1px solid var(--line); }
+  .srclist li .lg { width: 26px; height: 26px; box-shadow: none; }
+  .srclist li .lg b { font-size: .65rem; }
+  .srclist .nm { flex: 1; font-weight: 700; }
+  .srclist li.off .nm, .srclist li.off .lg { opacity: .4; }
+  .fav { border: 0; background: none; font-size: 1.25rem; color: var(--line); cursor: pointer; padding: 2px 4px; }
+  .fav.on { color: var(--m-sol-bg); }
+  .sw { width: 42px; height: 24px; border-radius: 99px; border: 0; background: var(--line); position: relative; cursor: pointer; flex: none; }
+  .sw i { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: left .15s; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+  .sw.on { background: var(--m-lys); }
+  .sw.on i { left: 21px; }
+
+  /* Lokalt: lys og vær */
+  .lys { background: linear-gradient(160deg, #1d2a4a 0%, #3b3f78 45%, #e98b5a 100%); color: #fff; padding: 16px 16px 14px; border-radius: 6px; }
+  .lys h4 { margin: 0 0 2px; font: 800 1.05rem var(--head); text-transform: uppercase; letter-spacing: .02em; opacity: .9; }
+  .lys .big { font: 800 1.7rem/1.1 var(--head); margin: 4px 0 10px; }
+  .lys .times { display: flex; gap: 18px; font-size: .85rem; opacity: .9; }
+  .lys .arc { margin: 6px 0 2px; }
+  .wx { display: flex; gap: 12px; align-items: center; margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.22); }
+  .wxi { font-size: 2.1rem; line-height: 1; }
+  .wx b { display: block; font: 800 1.25rem/1.15 var(--head); }
+  .wx b::first-letter { text-transform: uppercase; }
+  .wx small { display: block; font-size: .85rem; opacity: .9; margin-top: 2px; }
+  .acts { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
+  .act { background: rgba(255,255,255,.16); color: #fff; font: 600 .82rem var(--sans); padding: 7px 11px; border-radius: 99px; }
+  a.act { text-decoration: none; }
+  .act.hi { background: #f6c453; color: #2e1f00; font-weight: 700; }
+  .wx2 { margin-top: 14px; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,.25); font-size: .85rem; }
+  .wx2 .acts { margin-top: 8px; }
+  .lys .more { display: inline-block; margin-top: 12px; color: #fff; font-size: .82rem; text-decoration: underline; text-underline-offset: 3px; opacity: .9; }
+  .credit-wx { display: block; margin-top: 10px; font-size: .66rem; color: rgba(255,255,255,.7); }
+
+  /* Festet sak */
+  .sun-wrap { padding: 10px 10px 0; background: linear-gradient(180deg, #f6c453 0, #f6c453 60%, var(--bg) 100%); }
+  .sun { border-radius: 10px; box-shadow: 0 6px 24px rgba(201,132,0,.35); border: 3px solid #fff3cf; }
+  .sun-label { display: flex; align-items: center; gap: 7px; padding: 9px 14px; background: #2e1f00; color: #f6c453;
+               font: 800 .8rem var(--sans); text-transform: uppercase; letter-spacing: .08em; }
+  .sun .t { font-size: 2.2rem; line-height: 1.02; }
+  .sun .kicker { color: #c98400; }
+  @media (min-width: 760px) { .sun-wrap { grid-column: 1 / -1; padding: 10px 0 0; } }
+
+  /* Fellestur */
+  .tur { position: relative; overflow: hidden; background: linear-gradient(160deg, #2f5d43, #3f8f5f); color: #fff; border-radius: 6px; padding: 16px; }
+  .tur-bg { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 90px; pointer-events: none; }
+  .tur > *:not(.tur-bg) { position: relative; }
+  .tur-top { display: flex; justify-content: space-between; font: 700 .75rem var(--sans); text-transform: uppercase; letter-spacing: .06em; opacity: .9; }
+  .tur h3 { margin: 8px 0 4px; font: 800 1.8rem/1.05 var(--head); }
+  .tur-full { margin: 6px 0; background: rgba(0,0,0,.18); border-radius: 8px; padding: 6px 9px; font-size: .8rem; }
+  .tur-pitch { margin: 4px 0 8px; font-size: .95rem; opacity: .95; }
+  .tur-facts { font-size: .82rem; opacity: .85; margin-bottom: 2px; }
+  .tur-link { color: #f6c453; font-weight: 700; font-size: .88rem; }
+  .tur-count { display: flex; align-items: center; gap: 10px; margin: 12px 0 10px; font-size: .9rem; font-weight: 600; }
+  .dots { display: flex; }
+  .dots i { width: 22px; height: 22px; border-radius: 50%; background: #f6c453; border: 2px solid #2f5d43; margin-left: -7px; display: block; }
+  .dots i:first-child { margin-left: 0; }
+  .dots i:nth-child(3n+2) { background: #f29a6b; } .dots i:nth-child(3n) { background: #9fd3b1; }
+  .dots em { font-style: normal; font-size: .75rem; margin-left: 4px; }
+  .tur-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .tur-btn { border: 0; background: #f6c453; color: #2e1f00; font: 800 1rem var(--sans); padding: 11px 22px; border-radius: 99px; cursor: pointer; }
+  .tur-btn.on { background: #fff; color: #2f5d43; }
+  .tur-ics { border: 1.5px solid rgba(255,255,255,.5); background: none; color: #fff; font: 600 .85rem var(--sans); padding: 9px 14px; border-radius: 99px; cursor: pointer; }
+  .tur-sub { margin: 10px 0 0; font-size: .8rem; opacity: .85; }
+  .tur-note { margin: 8px 0 0; font-size: .7rem; opacity: .7; }
+  .regionrow { display: flex; gap: 8px; }
+  .postrow { margin-top: 8px; }
+  .postrow input { flex: 1; min-width: 0; padding: 9px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font: 600 .95rem var(--sans); }
+  .regionrow select { flex: 1; min-width: 0; padding: 9px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font: 600 .95rem var(--sans); }
+  .locate { border: 1px solid var(--line); background: var(--well); border-radius: 8px; padding: 8px 10px; font: 600 .82rem var(--sans); cursor: pointer; }
+
+  /* Mest gledet */
+  .top5 { background: var(--card); padding: 14px 14px 6px; border-radius: 6px; }
+  .top5 h4 { margin: 0 0 6px; font: 800 1.15rem var(--head); text-transform: uppercase; display: flex; align-items: center; gap: 6px; }
+  .top5 ol { list-style: none; margin: 0; padding: 0; counter-reset: n; }
+  .top5 li a { display: grid; grid-template-columns: 34px 1fr auto; gap: 8px; align-items: center; padding: 9px 0; border-top: 1px solid var(--line); }
+  .top5 li a::before { counter-increment: n; content: counter(n); font: 800 1.6rem/1 var(--head); color: var(--m-sol); }
+  .top5 .tt { font: 700 .98rem/1.2 var(--head); }
+  .top5 .n { font-size: .75rem; color: var(--muted); white-space: nowrap; }
+
+  /* Annonser */
+  .ad-wrap { background: var(--well); padding: 8px 0 14px; text-align: center; }
+  .ad-label { font-size: .72rem; letter-spacing: .12em; color: var(--muted); margin-bottom: 6px; }
+  .ad { display: block; margin: 0 auto; width: min(100% - 40px, 420px); aspect-ratio: 1 / 1; border-radius: 4px; overflow: hidden; position: relative; text-align: left; }
+  .ad-coffee { background: #f4ead7; color: #3b2314; }
+  .ad-coffee .band { background: #3b2314; color: #f4ead7; padding: 18px 18px 22px; font: 800 1.9rem/1 var(--head); text-transform: uppercase;
+                     clip-path: ellipse(120% 100% at 50% 0%); }
+  .ad-coffee .band em { font-style: normal; background: #f2b544; color: #3b2314; padding: 0 6px; }
+  .ad-coffee svg { position: absolute; left: 50%; top: 52%; width: 46%; transform: translate(-50%, -50%); }
+  .ad-coffee .price { position: absolute; right: 14px; bottom: 14px; background: #3b2314; color: #f2b544; border-radius: 12px; padding: 6px 12px 8px; text-align: center; }
+  .ad-coffee .price small { display: block; color: #f4ead7; font: 700 .7rem var(--sans); letter-spacing: .08em; }
+  .ad-coffee .price b { font: 800 2.6rem/1 var(--head); }
+  .ad-coffee .brand { position: absolute; left: 16px; bottom: 16px; max-width: 52%; font: 800 1.25rem/1.1 var(--head); }
+  .ad-tree { background: linear-gradient(170deg, #1f5a3d, #3f8f5f); color: #fff; display: flex; flex-direction: column; justify-content: space-between; padding: 22px; }
+  .ad-tree .h { font: 800 2.2rem/1 var(--head); text-transform: uppercase; }
+  .ad-tree .h span { color: #f6c453; }
+  .ad-tree svg { width: 54%; align-self: center; }
+  .ad-tree .cta { display: flex; justify-content: space-between; align-items: center; }
+  .ad-tree .cta b { background: #f6c453; color: #1f3a28; padding: 10px 16px; border-radius: 99px; font: 800 .95rem var(--sans); }
+  .native { border-top: 4px solid #8a5cf6; }
+  .native .sponsor { display: flex; align-items: center; gap: 8px; font: 700 .72rem var(--sans); text-transform: uppercase; letter-spacing: .06em; color: #8a5cf6; }
+  .native .sponsor i { width: 22px; height: 22px; border-radius: 6px; background: #8a5cf6; display: grid; place-items: center; color: #fff; font-style: normal; font-size: .8rem; }
+
+  .chipline { padding: 0 14px; }
+  .clear { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 5px 11px; font-size: .8rem; cursor: pointer; }
+  .empty, .loading { text-align: center; color: var(--muted); padding: 60px 12px; }
+  footer .foot-brand { margin-bottom: 10px; }
+  footer .gn { color: var(--brand); } footer .gn b { font-size: 1.6rem; }
+  footer { color: var(--muted); font-size: .75rem; text-align: center; margin-top: 26px; line-height: 1.6; padding: 0 14px; }
+
+  @media (min-width: 760px) {
+    .page { padding-left: 10px; padding-right: 10px; }
+    .feed { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: row dense; }
+    .feed > .hero, .feed > .text-wrap, .feed > .pair, .feed > .ad-wrap, .feed > .mix, .feed > .overlay-wrap { grid-column: 1 / -1; }
+    .inset { margin: 0; }
+    .hero { display: grid; grid-template-columns: 1.6fr 1fr; border-radius: 6px; }
+    .hero .ph { aspect-ratio: auto; min-height: 400px; }
+    .hero .body { padding: 22px; align-self: center; }
+    .hero .t { font-size: 2.7rem; }
+    .pair .ph { aspect-ratio: 16 / 10; }
+    .pair .t { font-size: 1.35rem; }
+    .overlay .ph { aspect-ratio: 21 / 9; }
+    .mix, .card { border-radius: 6px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="bar">
+    <a class="logo" id="logoHome" href="#" aria-label="GN – Gode nyheter, til forsiden"><span class="gn" aria-hidden="true"><b>GN</b><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="3.6"/><g stroke-width="2" stroke-linecap="round"><path d="M10 2v2.5M10 15.5V18M2 10h2.5M15.5 10H18M4.3 4.3l1.8 1.8M13.9 13.9l1.8 1.8M4.3 15.7l1.8-1.8M13.9 6.1l1.8-1.8"/></g></svg></span></a>
+    <button class="iconbtn" id="openMenu" aria-label="Åpne meny" aria-controls="drawer" aria-expanded="false">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+  </div>
+</header>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="Meny" aria-hidden="true">
+  <div class="drawer-head">
+    <div class="logo"><span class="gn" aria-hidden="true"><b>GN</b><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="3.6"/><g stroke-width="2" stroke-linecap="round"><path d="M10 2v2.5M10 15.5V18M2 10h2.5M15.5 10H18M4.3 4.3l1.8 1.8M13.9 13.9l1.8 1.8M4.3 15.7l1.8-1.8M13.9 6.1l1.8-1.8"/></g></svg></span></div>
+    <button class="iconbtn" id="closeMenu" aria-label="Lukk meny">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+
+  <h3>Mitt område</h3>
+  <div class="regionrow"><select id="regionSel" aria-label="Velg område"></select><button class="locate" data-locate>📍 Finn nærmeste</button></div>
+  <form class="regionrow postrow" id="postForm"><input id="postnr" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" placeholder="Postnummer" aria-label="Postnummer"><button class="locate" type="submit">Bruk</button></form>
+  <p class="hint" id="locHint"></p>
+  <h3>Seksjoner</h3>
+  <ul class="menu-list" id="menuSections"></ul>
+  <h3>Tema</h3>
+  <ul class="menu-list" id="menuCats"></ul>
+  <h3>Filter</h3>
+  <div class="seg" id="segStrict"></div>
+  <h3>Kilder</h3>
+  <div class="srcctl"><button data-src-all="on">Vis alle</button><button data-src-all="off">Skjul alle</button></div>
+  <ul class="srclist" id="menuSources"></ul>
+  <p class="hint">★ åpnes først</p>
+  <h3>Utseende</h3>
+  <div class="seg" id="segTheme"></div>
+  <h3>Om</h3>
+  <p class="about">Saker fra norske og utenlandske kilder, valgt og oppsummert av AI. Hele saken leses hos kilden.</p>
+</aside>
+
+<main class="page">
+  <div class="feed" id="feed"><div class="loading">Laster …</div></div>
+  <footer>
+    <div class="foot-brand"><span class="gn" aria-hidden="true"><b>GN</b><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="3.6"/><g stroke-width="2" stroke-linecap="round"><path d="M10 2v2.5M10 15.5V18M2 10h2.5M15.5 10H18M4.3 4.3l1.8 1.8M13.9 13.9l1.8 1.8M4.3 15.7l1.8-1.8M13.9 6.1l1.8-1.8"/></g></svg></span></div>
+    Innhold og bilder tilhører kildene.<br>
+    © <span id="year"></span> GN – Gode nyheter
+  </footer>
+</main>
+
+<script>
+// ===== Konfigurasjon =====
+const SUPABASE_URL = '';          // f.eks. 'https://abcd1234.supabase.co'
+const SUPABASE_ANON_KEY = '';     // «anon public»-nøkkelen
+const SHOW_SOURCE_IMAGES = true;  // false = bare egne illustrasjoner (se README om bilderettigheter)
+// Områder (hentes fra regions.json, samme fil som innsamlingsjobben bruker; dette er reserve)
+let REGIONS = [{ id: 'drammen', name: 'Drammen', lat: 59.744, lon: 10.204 }];
+const home = () => REGIONS.find((r) => r.id === state.region) || REGIONS[0];
+const YR_URL = 'https://www.yr.no/nb'; // bytt gjerne til yr-lenken for ditt sted
+// Forslag etter vær. when = hvilke værtyper forslaget passer til:
+// sol, sky (oppholdsvær), kulde (klart og kaldt), varme, snø, regn, vind, tåke. months = bare i disse månedene (valgfritt)
+const ACTIVITIES = [
+  // Ute – turer i nærheten (ut.no)
+  { e: '🥾', name: 'Prins Oscars utsikt fra Spiralen', when: ['sol', 'sky', 'kulde'], url: 'https://ut.no/turforslag/1112202525/fottur-til-prins-oscars-utsikt' },
+  { e: '🥾', name: 'Haukåsutsikten i Strømsåsen', when: ['sol', 'sky', 'kulde'], url: 'https://ut.no/turforslag/118517/haukasutsikten' },
+  { e: '🗼', name: 'Risdalstårnet fra Strømsø torg', when: ['sol', 'sky'], url: 'https://ut.no/turforslag/1112456/strms-torg-risdalstarnet' },
+  { e: '🌲', name: 'Over Landfallhytta til Kjøsterud', when: ['sol', 'sky', 'kulde'], url: 'https://ut.no/turforslag/117212' },
+  { e: '🎨', name: 'Gatekunstvandring på Strømsø', when: ['sky', 'tåke'], url: 'https://www.ut.no/turforslag/1114463' },
+  { e: '🌫', name: 'Skogstur', when: ['tåke'] },
+  { e: '🔥', name: 'Bålpanne i hagen', when: ['kulde', 'sky'] },
+  { e: '☕', name: 'Kakao på termos', when: ['kulde', 'snø', 'sky'] },
+  { e: '⛷', name: 'Lysløypa', when: ['snø'], cold: true },
+  { e: '🛷', name: 'Aking', when: ['snø'] },
+  { e: '⛄', name: 'Snømann', when: ['snø'] },
+  { e: '🏊', name: 'Bading', when: ['varme'] },
+  { e: '🍦', name: 'Is ved elva', when: ['varme', 'sol'], months: [5, 6, 7, 8, 9] },
+  { e: '🧺', name: 'Piknik', when: ['varme', 'sol'], months: [5, 6, 7, 8, 9] },
+  // Inne – steder i Drammen
+  { e: '📚', name: 'Drammensbiblioteket', when: ['regn', 'vind', 'tåke', 'snø'], url: 'https://www.visitnorway.no/listings/drammens-biblioteket/269116/' },
+  { e: '🖼', name: 'Drammens Museum', when: ['regn', 'vind', 'tåke'], url: 'https://drammens.museum.no/' },
+  { e: '🌊', name: 'Drammensbadet', when: ['regn', 'vind', 'kulde', 'snø'], url: 'https://www.visitnorway.no/listings/drammensbadet/262953/' },
+  // Inne – hjemme
+  { e: '🧁', name: 'Bak kanelboller', when: ['regn', 'vind', 'snø', 'kulde'] },
+  { e: '🍪', name: 'Bak pepperkaker', when: ['regn', 'vind', 'snø', 'kulde', 'sky'], months: [11, 12] },
+  { e: '🏠', name: 'Lag pepperkakehus', when: ['regn', 'vind', 'snø'], months: [12] },
+  { e: '🍲', name: 'Suppe', when: ['regn', 'kulde', 'vind'] },
+  { e: '🎲', name: 'Brettspill', when: ['regn', 'vind', 'snø'] },
+  { e: '🧩', name: 'Puslespill', when: ['regn', 'vind'] },
+  { e: '📖', name: 'Lesing', when: ['regn', 'snø', 'vind', 'kulde', 'tåke'] },
+  { e: '📞', name: 'Ring en venn', when: ['regn', 'vind', 'tåke'] },
+  { e: '✏️', name: 'Håndarbeid', when: ['regn', 'vind'] },
+  { e: '🎬', name: 'Filmkveld', when: ['regn', 'vind', 'snø'] },
+];
+const MORE_TURER = 'https://ut.no/gruppe/1528/dnt-drammen-og-omegn';
+// =========================
+
+const SECTIONS = [
+  { id: 'forsiden', label: 'Forsiden' }, { id: 'lokalt', label: 'Lokalt' },
+  { id: 'norge', label: 'Norge' }, { id: 'verden', label: 'Verden' }, { id: 'idrett', label: 'Idrett', cat: 'Idrett' },
+];
+const ICON = {
+  sol: '<svg class="mi" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="5"/><g stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></g></svg>',
+  lys: '<svg class="mi" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1l2.6 7.4L22 11l-7.4 2.6L12 21l-2.6-7.4L2 11l7.4-2.6z"/></svg>',
+  los: '<svg class="mi" viewBox="0 0 24 24" fill="currentColor"><path d="M9 21h6v-1.5H9zm3-20a7 7 0 0 0-4 12.7V17h8v-3.3A7 7 0 0 0 12 1z"/></svg>',
+  hjerte: '<svg class="mi" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-8-5.2-8-11.2A4.6 4.6 0 0 1 12 6.6a4.6 4.6 0 0 1 8 3.2C20 15.8 12 21 12 21z"/></svg>',
+};
+const MOODS = {
+  sol:    { label: 'Solskinn',    desc: 'De aller gladeste sakene',   c: 'var(--m-sol)',    bg: 'var(--m-sol-bg)' },
+  lys:    { label: 'Lyspunkt',    desc: 'Fremgang og gode nyheter',   c: 'var(--m-lys)',    bg: 'var(--m-lys-bg)' },
+  los:    { label: 'Løsning',     desc: 'Noen har løst et problem',   c: 'var(--m-los)',    bg: 'var(--m-los-bg)' },
+  hjerte: { label: 'Hjertevarmt', desc: 'Mennesker og dyr som bryr seg', c: 'var(--m-hjerte)', bg: 'var(--m-hjerte-bg)' },
+};
+function mood(it) {
+  if (it.score >= 9) return 'sol';
+  if (it.tone === 'konstruktiv') return 'los';
+  if (['Mennesker', 'Dyr'].includes(it.category)) return 'hjerte';
+  return 'lys';
+}
+const CAT_COLORS = {
+  'Natur og miljø': ['#3f8f5f', '#1f5a3d'], 'Vitenskap': ['#4a6fd1', '#27408f'], 'Helse': ['#d36b7b', '#8f3446'],
+  'Mennesker': ['#e39a3b', '#b0611c'], 'Samfunn': ['#5b7b8f', '#2f4b5d'], 'Kultur': ['#9c5ccf', '#5e2f8a'],
+  'Idrett': ['#2c9fb0', '#1a6470'], 'Dyr': ['#b98b4c', '#6e4f25'], 'Teknologi': ['#5162a8', '#2c3566'], 'Arbeid og økonomi': ['#6f8f3f', '#43581f'],
+};
+const CATS = Object.keys(CAT_COLORS).filter((c) => c !== 'Idrett'); // Idrett har egen seksjon
+const inSection = (it, id) => id === 'forsiden' || (id === 'idrett' ? it.category === 'Idrett' : it.region === id);
+const STRICT = [
+  { v: 6, label: 'Alle' }, { v: 7, label: 'Normal' }, { v: 8, label: 'Streng' }, { v: 9, label: 'Strengest' },
+];
+const THEMES = [{ v: 'auto', label: 'Auto' }, { v: 'light', label: 'Lyst' }, { v: 'dark', label: 'Mørkt' }];
+const REGION_LABEL = { lokalt: 'Lokalt', norge: 'Norge', verden: 'Verden' };
+
+// ---------- Tilstand ----------
+const state = { section: 'forsiden', category: null, region: 'drammen', events: [], minScore: 7, theme: 'auto', items: [], demo: false };
+const store = {
+  get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
+Object.assign(state, store.get('gn-prefs', {}), { category: null });
+document.documentElement.dataset.theme = state.theme;
+const gladSet = new Set(store.get('gn-glad', []));
+const savePrefs = () => store.set('gn-prefs', { section: state.section, minScore: state.minScore, theme: state.theme, region: state.region });
+
+
+const $ = (id) => document.getElementById(id);
+const esc = (s = '') => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function timeAgo(iso) {
+  const m = Math.round((Date.now() - new Date(iso)) / 60000);
+  if (m < 60) return `${Math.max(m, 1)} min siden`;
+  const h = Math.round(m / 60);
+  if (h < 24) return `${h} t siden`;
+  const d = Math.round(h / 24);
+  return d === 1 ? 'i går' : `${d} dager siden`;
+}
+// ---------- Nærhet: lokalsaker fra ditt område først, så nabolaget ----------
+function km(a, b) {
+  if (!a || !b) return null;
+  const R = 6371, r = Math.PI / 180, dLat = (b.lat - a.lat) * r, dLon = (b.lon - a.lon) * r;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+const areaOf = (id) => REGIONS.find((r) => r.id === id);
+// 0 = ditt område, 1 = nabo (< 20 km) eller generell Buskerud-sak, 2 = i nærheten (< 45 km), 3 = langt unna
+function nearTier(it) {
+  if (it.region !== 'lokalt') return null;
+  if (!it.area) return 1;
+  if (it.area === state.region) return 0;
+  const d = km(home(), areaOf(it.area));
+  return d == null ? 2 : d < 20 ? 1 : d < 45 ? 2 : 3;
+}
+const NEAR_BOOST = { 0: 4, 1: 1.5, 2: 0, 3: -6 };
+const rank = (it) => it.score * 3 - (Date.now() - new Date(it.published_at)) / 3600e3 * 0.25 + (NEAR_BOOST[nearTier(it)] ?? 0);
+
+// ---------- Data ----------
+const sbHeaders = () => ({ apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` });
+async function loadRegions() {
+  try { const r = await fetch('regions.json'); if (r.ok) REGIONS = await r.json(); } catch {}
+}
+async function loadLocal() {
+  if (state.demo) { state.weather = demoWeather(); state.events = demoEvents(); return; }
+  try {
+    const [w, ev] = await Promise.all([
+      fetch(`${SUPABASE_URL}/rest/v1/local_info?key=eq.${encodeURIComponent('weather:' + state.region)}&select=data`, { headers: sbHeaders() }).then((r) => r.json()),
+      fetch(`${SUPABASE_URL}/rest/v1/events?region=eq.${encodeURIComponent(state.region)}&order=date,slot&select=*`, { headers: sbHeaders() }).then((r) => r.json()),
+    ]);
+    state.weather = w?.[0]?.data?.days || null;
+    state.events = Array.isArray(ev) ? ev : [];
+  } catch { state.weather = null; state.events = []; }
+}
+// Oppdater bare lys/vær-kortet og fellestur (uten å tegne hele forsiden på nytt)
+function refreshLocal() {
+  const lys = document.querySelector('.lys'); if (lys) lys.outerHTML = lysModule();
+  const tur = document.querySelector('.tur'); if (tur) tur.outerHTML = turModule(); else render();
+}
+async function load() {
+  $('feed').innerHTML = '<div class="loading">Laster …</div>';
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) { state.demo = true; state.items = DEMO; await loadLocal(); return render(); }
+  loadLocal().then(refreshLocal);
+  try {
+    const url = `${SUPABASE_URL}/rest/v1/articles?select=id,story_id,url,source,source_domain,area,pinned_until,kicker,title_no,summary_no,image_url,score,tone,category,region,published_at,glad_count`
+      + `&score=gte.6&order=published_at.desc&limit=300`;
+    const res = await fetch(url, { headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } });
+    if (!res.ok) throw new Error(res.status);
+    state.items = await res.json(); state.demo = false; render();
+  } catch {
+    $('feed').innerHTML = '<div class="empty">Fikk ikke lastet saker.</div>';
+  }
+}
+
+async function glad(id) {
+  if (gladSet.has(id)) return;
+  gladSet.add(id); store.set('gn-glad', [...gladSet]);
+  const it = state.items.find((x) => String(x.id) === String(id));
+  if (it) it.glad_count = (it.glad_count || 0) + 1;
+  document.querySelectorAll(`[data-glad="${id}"]`).forEach((b) => {
+    b.classList.add('on', 'pop'); b.querySelector('span').textContent = it?.glad_count ?? '';
+  });
+  if (!state.demo) {
+    fetch(`${SUPABASE_URL}/rest/v1/rpc/glad`, {
+      method: 'POST', body: JSON.stringify({ article_id: Number(id) }),
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}`, 'Content-Type': 'application/json' },
+    }).catch(() => {});
+  }
+}
+
+// ---------- Kilder: samme sak fra flere aviser + valg av kilder ----------
+const srcOff = new Set(store.get('gn-src-off', []));
+let srcFav = store.get('gn-src-fav', []);
+const saveSrc = () => { store.set('gn-src-off', [...srcOff]); store.set('gn-src-fav', srcFav); };
+const favRank = (s) => { const i = srcFav.indexOf(s); return i < 0 ? 99 : i; };
+// Slår sammen artikler med samme story_id til én sak med liste over kilder (favoritter først)
+function grouped() {
+  const map = new Map();
+  for (const it of state.items) {
+    if (srcOff.has(it.source)) continue;
+    const k = String(it.story_id || it.id);
+    (map.get(k) || map.set(k, []).get(k)).push(it);
+  }
+  return [...map.entries()].map(([k, ms]) => {
+    const lead = ms.find((m) => String(m.id) === k) || [...ms].sort((a, b) => b.score - a.score)[0];
+    const seen = new Set();
+    const sources = [...ms].sort((a, b) => favRank(a.source) - favRank(b.source) || b.score - a.score)
+      .filter((m) => !seen.has(m.source) && seen.add(m.source));
+    const pins = ms.map((m) => m.pinned_until).filter(Boolean).sort();
+    return { ...lead, score: Math.max(...ms.map((m) => m.score)), url: sources[0].url, sources, pinned_until: pins.at(-1) || null };
+  });
+}
+const base = () => grouped().filter((it) => it.score >= state.minScore)
+  .filter((it) => inSection(it, state.section))
+  .filter((it) => !state.category || it.category === state.category);
+// ---------- Tidslinje med tidsbonus ----------
+// Lista er sortert på tid, men nærhet og kvalitet gjør at en sak «oppfører seg» som om den er litt nyere (eller eldre).
+const BONUS_H = { near: { 0: 3, 1: 1, 2: 0, 3: -6 }, top: 2 };   // timer: ditt område, nabo, i nærheten, langt unna; score 9–10
+const bonusHours = (it) => (BONUS_H.near[nearTier(it)] ?? 0) + (it.score >= 9 ? BONUS_H.top : 0);
+const tkey = (it) => new Date(it.published_at).getTime() + bonusHours(it) * 3600e3;
+const isPinned = (it) => it.pinned_until && new Date(it.pinned_until) > new Date();
+const visible = () => base().sort((a, b) => tkey(b) - tkey(a));
+// Toppsak: den beste saken nær deg siste døgn (rank har kvalitet + nærhet), resten er tidslinje
+function frontOrder(items) {
+  const pinned = items.filter(isPinned).sort((a, b) => new Date(b.pinned_until) - new Date(a.pinned_until))[0] || null;
+  const rest = items.filter((it) => it !== pinned);
+  const recent = rest.filter((it) => Date.now() - new Date(it.published_at) < 864e5);
+  const hero = (recent.length ? recent : rest).reduce((best, it) => (!best || rank(it) > rank(best) ? it : best), null);
+  return { pinned, list: hero ? [hero, ...rest.filter((it) => it !== hero)] : rest };
+}
+
+// ---------- Byggeklosser ----------
+function photo(it, badge = true) {
+  const [c1, c2] = CAT_COLORS[it.category] || ['#6b8f71', '#2f5d43'];
+  const m = MOODS[mood(it)];
+  const img = SHOW_SOURCE_IMAGES && it.image_url
+    ? `<img src="${esc(it.image_url)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.classList.remove('has-img');this.remove()">` : '';
+  return `<div class="ph${img ? ' has-img' : ''}" data-cat="${esc(it.category || '')}" style="--c1:${c1};--c2:${c2}">${img}
+    ${badge ? `<span class="accent" style="background:${m.bg}"></span>` : ''}
+    ${img && it.photo_credit ? `<span class="credit">${esc(it.photo_credit)}</span>` : ''}</div>`;
+}
+const hue = (s) => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 7);
+const initials = (s) => s.split(/[\s.-]+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
+const favicon = (d) => `https://icons.duckduckgo.com/ip3/${encodeURIComponent(d)}.ico`;
+const logo = (m) => `<span class="lg" style="--h:${hue(m.source)}"><b>${esc(initials(m.source))}</b>${m.source_domain
+  ? `<img src="${favicon(m.source_domain)}" alt="" loading="lazy" onload="if(this.naturalWidth<8)this.remove()" onerror="this.remove()">` : ''}</span>`;
+const chip = (m) => `<button class="srcbtn" data-open="${esc(m.url)}">${logo(m)}${esc(m.source)}</button>`;
+const MAX_LOGOS = 3;
+function sourcesEl(it, rich) {
+  // Store kort: så mange knapper som får plass på én linje, resten bak «+N» (regnes ut i fitSources)
+  if (rich) return `<span class="srcs rich">${it.sources.map(chip).join('')}<button class="srcbtn plus" data-expand hidden></button></span>`;
+  // Små kort: inntil 3 logoer, deretter «+N» som folder ut en liste under
+  const extra = it.sources.length - MAX_LOGOS;
+  return `<span class="srcs">${it.sources.slice(0, MAX_LOGOS).map((m) => `<button class="srcbtn icon" data-open="${esc(m.url)}" aria-label="Les i ${esc(m.source)}">${logo(m)}</button>`).join('')}`
+    + (extra > 0 ? `<button class="plus sm" data-expand-list aria-label="Vis alle ${it.sources.length} kilder">+${extra}</button>` : `<span class="n">${it.sources.length} kilder</span>`) + '</span>';
+}
+function fitSources() {
+  document.querySelectorAll('.srcs.rich:not(.open)').forEach((box) => {
+    const chips = [...box.querySelectorAll('.srcbtn:not(.plus)')], plus = box.querySelector('.plus');
+    chips.forEach((c) => { c.hidden = false; }); plus.hidden = true;
+    const avail = box.clientWidth, gap = 6, plusW = 48;
+    let used = 0, hidden = 0;
+    chips.forEach((c, i) => {
+      const w = c.offsetWidth + gap, last = i === chips.length - 1;
+      if (hidden || (i > 0 && used + w > avail - (last ? 0 : plusW))) { c.hidden = true; hidden++; } else used += w;
+    });
+    if (hidden) { plus.hidden = false; plus.textContent = `+${hidden}`; plus.setAttribute('aria-label', `Vis ${hidden} kilder til`); }
+  });
+}
+addEventListener('resize', () => requestAnimationFrame(fitSources));
+const title = (it) => `<h2 class="t">${it.kicker ? `<span class="kicker">${esc(it.kicker)}</span> ` : ''}${esc(it.title_no)}</h2>`;
+const gladBtn = (it) => { const on = gladSet.has(String(it.id)); return `<button class="glad${on ? ' on' : ''}" data-glad="${esc(it.id)}" aria-label="Dette gledet meg">${ICON.sol}<span>${it.glad_count || 0}</span></button>`; };
+const meta = (it, short) => {
+  const multi = it.sources.length > 1, one = it.sources[0];
+  const src = short ? (multi ? sourcesEl(it, false) : '') : (multi ? '' : `<span class="src1">${logo(one)}${esc(one.source)}</span><span>·</span>`);
+  const place = it.region === 'lokalt' && it.area ? areaOf(it.area)?.name : null;
+  return `<div class="meta"><span class="region">${it.category === 'Idrett' && !place ? 'Idrett' : place || REGION_LABEL[it.region] || ''}</span>${src}<span>${timeAgo(it.published_at)}</span>${gladBtn(it)}</div>`
+    + (!short && multi ? `<div class="readat"><span class="lbl">Les hos</span>${sourcesEl(it, true)}</div>` : '')
+    + (short && it.sources.length > MAX_LOGOS ? `<div class="srcmore"><span class="srcs rich open">${it.sources.map(chip).join('')}</span></div>` : '');
+};
+const card = (it, cls, inner) => `<a class="card ${cls}" href="${esc(it.url)}" target="_blank" rel="noopener" style="--mc:${MOODS[mood(it)].c};--mbg:${MOODS[mood(it)].bg}">${inner}</a>`;
+const sum = (it) => it.summary_no ? `<p class="sum">${esc(it.summary_no)}</p>` : '';
+
+// Festet sak – ligger øverst en periode (gullramme, ingen etikett)
+const sunCard = (it) => `<div class="sun-wrap">${card(it, 'sun', `${photo(it, false)}<div class="body">${title(it)}${sum(it)}${meta(it)}</div>`)}</div>`;
+const L = {
+  hero:    (it) => card(it, 'hero', `${photo(it)}<div class="body">${title(it)}${sum(it)}${meta(it)}</div>`),
+  bigfull: (it) => card(it, 'bigfull', `${photo(it)}<div class="body">${title(it)}${meta(it)}</div>`),
+  big:     (it) => card(it, 'inset', `${photo(it)}<div class="body">${title(it)}${meta(it)}</div>`),
+  overlay: (it) => `<div class="overlay-wrap">${card(it, 'overlay', `${photo(it)}<div class="over">${title(it)}${meta(it)}</div>`)}</div>`,
+  row:     (it) => card(it, 'row inset', `${photo(it, false)}<div class="body">${title(it)}${meta(it, true)}</div>`),
+  text:    (it) => `<div class="text-wrap inset">${card(it, `textcard m-${mood(it)}`, `${title(it)}${sum(it)}${meta(it)}`)}</div>`,
+  pair:    (a, b) => `<div class="pair inset">${[a, b].map((it) => card(it, '', `${photo(it)}<div class="body">${title(it)}${meta(it, true)}</div>`)).join('')}</div>`,
+};
+
+// ---------- Moduler ----------
+// Soloppgang/-nedgang (NOAA-forenklet)
+function sun(date, lat, lon) {
+  const r = Math.PI / 180, jd = date / 864e5 + 2440587.5;
+  const n = Math.ceil(jd - 2451545 + 0.0008), J = n - lon / 360;
+  const M = (357.5291 + 0.98560028 * J) % 360;
+  const C = 1.9148 * Math.sin(M * r) + 0.02 * Math.sin(2 * M * r) + 0.0003 * Math.sin(3 * M * r);
+  const lam = (M + C + 282.9372) % 360;
+  const Jt = 2451545 + J + 0.0053 * Math.sin(M * r) - 0.0069 * Math.sin(2 * lam * r);
+  const dec = Math.asin(Math.sin(lam * r) * Math.sin(23.4397 * r));
+  const cw = (Math.sin(-0.833 * r) - Math.sin(lat * r) * Math.sin(dec)) / (Math.cos(lat * r) * Math.cos(dec));
+  const w = Math.acos(Math.max(-1, Math.min(1, cw))) / r;
+  const toDate = (j) => new Date((j - 2440587.5) * 864e5);
+  return { rise: toDate(Jt - w / 360), set: toDate(Jt + w / 360), len: (2 * w / 360) * 24 * 60 };
+}
+function lysModule() {
+  const now = new Date(), t = sun(now, home().lat, home().lon), y = sun(new Date(now - 864e5), home().lat, home().lon);
+  const hm = (d) => d.toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit' });
+  const diff = Math.round(t.len - y.len);
+  const yr = now.getFullYear();
+  let solst = new Date(yr, 11, 21); if (now > new Date(yr, 11, 22)) solst = new Date(yr + 1, 11, 21);
+  const winter = new Date(now.getMonth() < 6 ? yr - 1 : yr, 11, 21);
+  const daysTo = Math.ceil((solst - now) / 864e5);
+  let big;
+  if (diff > 0) {
+    const gained = Math.round(t.len - sun(winter, home().lat, home().lon).len);
+    big = `+${diff} min dagslys siden i går`;
+  } else if (daysTo <= 40) big = `${daysTo} dager til dagene blir lengre`;
+  else big = `${Math.floor(t.len / 60)} t ${Math.round(t.len % 60)} min dagslys`;
+  const pct = Math.min(1, t.len / (19 * 60));
+  return `<section class="lys inset"><h4>${esc(home().name)}</h4>
+    <svg class="arc" viewBox="0 0 200 50" width="100%" height="44"><path d="M10 46 Q100 ${46 - 80 * pct} 190 46" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="2" stroke-dasharray="3 4"/>
+      <circle cx="100" cy="${46 - 40 * pct}" r="7" fill="#f6c453"/></svg>
+    <div class="big">${big}</div>
+    <div class="times"><span>Soloppgang ${hm(t.rise)}</span><span>Solnedgang ${hm(t.set)}</span></div>
+    <div class="wx-slot">${weatherHtml()}</div></section>`;
+}
+
+// ---------- Vær + turtips ----------
+const ymd = (d) => d.toLocaleDateString('sv-SE', { timeZone: 'Europe/Oslo' });
+const WX = [
+  [/thunder/, '⛈', 'Torden'], [/sleet/, '🌨', 'Sludd'], [/snow/, '🌨', 'Snø'], [/rain/, '🌧', 'Regn'], [/fog/, '🌫', 'Tåke'],
+  [/clearsky/, '☀️', 'Sol'], [/fair/, '🌤', 'Mest sol'], [/partlycloudy/, '⛅', 'Litt sol'], [/cloudy/, '☁️', 'Skyet'],
+];
+const wxInfo = (sym) => { const m = WX.find(([re]) => re.test(sym)); return m ? { icon: m[1], desc: m[2] } : { icon: '🌡', desc: '' }; };
+function dayName(date) {
+  const today = ymd(new Date()), tomorrow = ymd(new Date(Date.now() + 864e5));
+  if (date === today) return 'I dag';
+  if (date === tomorrow) return 'I morgen';
+  const n = new Date(date + 'T12:00:00').toLocaleDateString('nb-NO', { weekday: 'long' });
+  return n[0].toUpperCase() + n.slice(1);
+}
+// Værtype for en dag
+function kindOf(d) {
+  if (/snow/.test(d.symbol)) return 'snø';
+  if (/rain|sleet|thunder/.test(d.symbol) || d.precip >= 1) return 'regn';
+  if (d.wind >= 10) return 'vind';
+  if (/fog/.test(d.symbol)) return 'tåke';
+  if (/clearsky|fair/.test(d.symbol)) return d.tmax >= 22 ? 'varme' : d.tmax <= -3 ? 'kulde' : 'sol';
+  return 'sky';
+}
+const OUTDOOR = ['sol', 'sky', 'kulde', 'varme'];
+// Velg dagen vi vil fremheve: fin helgedag > fin ukedag > første dag. I tillegg en «inne-tips»-linje
+// hvis nærmeste dag har dårlig vær og hoveddagen er en annen.
+function pickDays(days) {
+  const today = ymd(new Date()), early = new Date().getHours() < 14;
+  const cand = days.filter((d) => d.date > today || (d.date === today && early)).map((d) => ({ d, kind: kindOf(d) }));
+  if (!cand.length) return {};
+  const fine = (c) => OUTDOOR.includes(c.kind);
+  const weekend = cand.filter((c) => [0, 6].includes(new Date(c.d.date + 'T12:00:00').getDay()));
+  const main = weekend.find(fine) || cand.find(fine) || cand[0];
+  const near = cand[0];
+  const extra = near !== main && !fine(near) ? near : null;
+  return { main, extra };
+}
+function describe(d, kind) {
+  const n = (x) => String(x).replace('-', '−');
+  const temp = d.tmin === d.tmax ? `${n(d.tmax)}°` : (d.tmin < 0 ? `${n(d.tmin)} til ${n(d.tmax)}°` : `${d.tmin}–${d.tmax}°`);
+  const extra = kind === 'vind' ? `, vind ${d.wind} m/s` : OUTDOOR.includes(kind) && d.precip < 0.2 ? ', opphold' : '';
+  return `${wxInfo(d.symbol).desc.toLowerCase()}, ${temp}${extra}`;
+}
+function suggestions(kind, d, count, seed) {
+  const month = new Date(d.date + 'T12:00:00').getMonth() + 1;
+  const pool = ACTIVITIES.filter((a) => a.when.includes(kind) && (!a.months || a.months.includes(month)) && (!a.cold || d.tmax <= 1));
+  const pick = (arr, k) => arr.length ? [...Array(Math.min(k, arr.length))].map((_, i) => arr[(seed + i) % arr.length]) : [];
+  // Første forslag: noe som er laget nettopp for denne værtypen (helst et sted med lenke), resten fra hele utvalget
+  const primary = pool.filter((a) => a.when[0] === kind);
+  const primaryUrl = primary.filter((a) => a.url);
+  const first = pick(primaryUrl.length ? primaryUrl : primary.length ? primary : pool, 1);
+  const others = pick(pool.filter((a) => !first.includes(a)), count - first.length);
+  return [...first, ...others];
+}
+const chipHtml = (a, hi) => a.url
+  ? `<a class="act${hi ? ' hi' : ''}" href="${esc(a.url)}" target="_blank" rel="noopener">${a.e} ${esc(a.name)} →</a>`
+  : `<span class="act${hi ? ' hi' : ''}">${a.e} ${esc(a.name)}</span>`;
+function weatherHtml() {
+  if (!state.weather?.length) return '';
+  const { main, extra } = pickDays(state.weather); if (!main) return '';
+  const seed = Math.floor(Date.now() / 864e5);
+  const dag = dayName(main.d.date);
+  const title = `${dag}: ${describe(main.d, main.kind)}`;
+  const acts = suggestions(main.kind, main.d, 3, seed);
+  let html = `<div class="wx"><span class="wxi">${wxInfo(main.d.symbol).icon}</span><div><b>${title}</b></div></div>
+    <div class="acts">${acts.map((a, i) => chipHtml(a, i === 0)).join('')}</div>`;
+  if (extra) {
+    const ex = suggestions(extra.kind, extra.d, 2, seed + 3);
+    html += `<div class="wx2"><span>${wxInfo(extra.d.symbol).icon} ${dayName(extra.d.date)}: ${describe(extra.d, extra.kind)}</span>
+      <div class="acts">${ex.map((a) => chipHtml(a, false)).join('')}</div></div>`;
+  }
+  if (OUTDOOR.includes(main.kind) || main.kind === 'snø') html += `<a class="more" href="${MORE_TURER}" target="_blank" rel="noopener">Flere turer i nærheten</a>`;
+  return html + `<a class="credit-wx" href="${YR_URL}" target="_blank" rel="noopener">Værdata: MET Norway / yr.no</a>`;
+}
+// ---------- Fellestur («Bli med») ----------
+const joined = new Set(store.get('gn-joined', []).map(String));
+function turFacts(ev) {
+  const f = [];
+  if (ev.difficulty) f.push(`${ev.difficulty[0].toUpperCase()}${ev.difficulty.slice(1)} tur`);
+  if (ev.distance_km) f.push(`${String(ev.distance_km).replace('.', ',')} km`);
+  if (ev.duration_h) f.push(`ca. ${String(ev.duration_h).replace('.', ',')} t`);
+  return f.join(' · ');
+}
+function turModule() {
+  const evs = state.events || [];
+  if (!evs.length) return '<div class="tur" hidden></div>';
+  const date = evs[0].date;
+  const slots = evs.filter((e) => e.date === date).sort((a, b) => a.slot - b.slot);
+  const mine = slots.find((e) => joined.has(String(e.id)));
+  const ev = mine || slots.find((e) => e.join_count < e.capacity) || slots[slots.length - 1];
+  const total = slots.reduce((n, e) => n + e.join_count, 0);
+  const busy = slots.filter((e) => e.slot < ev.slot && e.join_count >= e.capacity);
+  const dag = dayName(date), dagLow = dag.toLowerCase();
+  const dots = Math.min(ev.join_count, 12);
+  const people = `${ev.join_count} skal gå`;
+  const facts = turFacts(ev);
+  return `<section class="tur inset" data-ev="${ev.id}">
+    <svg class="tur-bg" viewBox="0 0 400 120" preserveAspectRatio="none" aria-hidden="true"><path d="M0 120 L70 50 L120 85 L190 20 L260 80 L310 45 L400 110 L400 120 Z" fill="rgba(255,255,255,.08)"/></svg>
+    <div class="tur-top"><span>Fellestur · ${esc(home().name)}</span><span>${dag}</span></div>
+    <h3>${esc(ev.spot_name)}</h3>
+    ${facts ? `<div class="tur-facts">${esc(facts)}</div>` : ''}
+    ${busy.length ? `<p class="tur-full">Alternativ – «${esc(busy[0].spot_name)}» er full</p>` : ''}
+    <a class="tur-link" href="${esc(ev.url)}" target="_blank" rel="noopener">Se turen på ut.no →</a>
+    <div class="tur-count"><span class="dots">${'<i></i>'.repeat(dots)}${ev.join_count > 12 ? '<em>+' + (ev.join_count - 12) + '</em>' : ''}</span><span>${people}</span></div>
+    <div class="tur-actions">
+      ${mine ? `<button class="tur-btn on" data-leave="${ev.id}">✓ Med</button><button class="tur-ics" data-ics="${ev.id}">📅 Påminnelse</button>`
+             : `<button class="tur-btn" data-join="${ev.id}">Bli med</button>`}
+    </div>
+    ${slots.length > 1 && total ? `<p class="tur-sub">${total} totalt på ${slots.length} turer</p>` : ''}
+    <p class="tur-note">Uorganisert tur. Gå når det passer deg.</p>
+  </section>`;
+}
+async function joinEvent(id, leave) {
+  const ev = state.events.find((e) => String(e.id) === String(id)); if (!ev) return;
+  if (leave) { joined.delete(String(id)); ev.join_count = Math.max(0, ev.join_count - 1); }
+  else { joined.add(String(id)); ev.join_count++; }
+  store.set('gn-joined', [...joined]);
+  refreshLocal();
+  if (!state.demo) {
+    fetch(`${SUPABASE_URL}/rest/v1/rpc/${leave ? 'leave_event' : 'join_event'}`, { method: 'POST', body: JSON.stringify({ event_id: Number(id) }),
+      headers: { ...sbHeaders(), 'Content-Type': 'application/json' } }).catch(() => {});
+  }
+}
+function downloadIcs(id) {
+  const ev = state.events.find((e) => String(e.id) === String(id)); if (!ev) return;
+  const d = ev.date.replaceAll('-', '');
+  const next = new Date(ev.date + 'T12:00:00Z'); next.setUTCDate(next.getUTCDate() + 1);
+  const d2 = next.toISOString().slice(0, 10).replaceAll('-', '');
+  const txt = (x) => String(x || '').replace(/[,;\\]/g, (c) => '\\' + c).replace(/\n/g, ' ');
+  const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Gode nyheter//Fellestur//NO', 'BEGIN:VEVENT',
+    `UID:fellestur-${ev.id}@godenyheter`, `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').slice(0, 15)}Z`,
+    `DTSTART;VALUE=DATE:${d}`, `DTEND;VALUE=DATE:${d2}`, 'TRANSP:TRANSPARENT',
+    `SUMMARY:${txt('Tur: ' + ev.spot_name)}`, `DESCRIPTION:${txt((ev.pitch || '') + ' ' + ev.url)}`, `URL:${ev.url}`,
+    'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }));
+  a.download = 'fellestur.ics'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+function demoEvents() {
+  if (state.region !== 'drammen') return []; // eksempelturene finnes bare i Drammen
+  const sat = new Date(); sat.setDate(sat.getDate() + ((6 - sat.getDay() + 7) % 7 || 7));
+  const date = ymd(sat);
+  const pitch = '';
+  return [
+    { id: 'd1', date, slot: 0, capacity: 30, join_count: 30, spot_name: 'Prins Oscars utsikt', url: 'https://ut.no/turforslag/1112202525/fottur-til-prins-oscars-utsikt', pitch, difficulty: 'middels' },
+    { id: 'd2', date, slot: 1, capacity: 30, join_count: 7, spot_name: 'Risdalstårnet fra Strømsø torg', url: 'https://ut.no/turforslag/1112456/strms-torg-risdalstarnet', pitch, difficulty: 'enkel' },
+  ].map((e) => ({ ...e, join_count: e.join_count + (joined.has(e.id) ? 1 : 0) }));
+}
+
+// Demo: oppdiktet varsel med fint vær på lørdag
+function demoWeather() {
+  return [...Array(7)].map((_, i) => {
+    const dt = new Date(Date.now() + i * 864e5), dow = dt.getDay();
+    const sym = dow === 6 ? 'clearsky_day' : dow === 0 ? 'partlycloudy_day' : ['cloudy', 'lightrain', 'fair_day', 'rain', 'cloudy'][i % 5];
+    return { date: ymd(dt), tmin: 1 + (i % 3), tmax: 4 + (i % 3), precip: /rain/.test(sym) ? 3.2 : 0, wind: 3, symbol: sym };
+  });
+}
+function topModule(items) {
+  const top = [...items].filter((it) => it.glad_count > 0).sort((a, b) => b.glad_count - a.glad_count).slice(0, 5);
+  if (top.length < 3) return '';
+  return `<section class="top5 inset"><h4>Mest populært</h4><ol>
+    ${top.map((it) => `<li><a href="${esc(it.url)}" target="_blank" rel="noopener"><span class="tt">${esc(it.title_no)}</span><span class="n">${it.glad_count} ☀</span></a></li>`).join('')}</ol></section>`;
+}
+
+// Annonser – byttes ut med ekte annonsører. Format: display (VG-stil) og annonsørinnhold (native).
+const ADS = [
+  { type: 'display', html: () => `<a class="ad ad-coffee" href="#"><div class="band">Ukens <em>kaffe</em></div>
+      <svg viewBox="0 0 100 90"><path d="M15 30h60v28a22 22 0 0 1-22 22H37a22 22 0 0 1-22-22z" fill="#3b2314"/><path d="M75 38h6a9 9 0 0 1 0 18h-6" fill="none" stroke="#3b2314" stroke-width="6"/>
+      <g fill="none" stroke="#c98a5a" stroke-width="4" stroke-linecap="round"><path d="M33 22c-4-6 4-8 0-15M47 22c-4-6 4-8 0-15M61 22c-4-6 4-8 0-15"/></g></svg>
+      <div class="price"><small>MEDLEMSPRIS</small><b>29,-</b></div><div class="brand">☕ Bryggeriet Kaffebar</div></a>` },
+  { type: 'native', html: () => `<a class="card inset native" href="#"><div class="ph has-img" style="--c1:#8a5cf6;--c2:#4b2aa8">
+      <img src="${cf('U_Wash_bicycle_shop_02A.jpg')}" alt="" loading="lazy" onerror="this.parentNode.classList.remove('has-img');this.remove()"></div>
+      <div class="body"><div class="sponsor"><i>🚲</i>Annonsørinnhold · Sykkelverkstedet</div>
+      <h2 class="t" style="margin-top:6px">5 sykkelturer langs elva</h2>
+      <p class="sum">Fra Gamle Kirkeplass til Mjøndalen.</p></div></a>` },
+  { type: 'display', html: () => `<a class="ad ad-tree" href="#"><div class="h">Kjøp et tre.<br><span>Vi planter ett til.</span></div>
+      <svg viewBox="0 0 100 90"><circle cx="50" cy="34" r="28" fill="#6cc48c"/><circle cx="32" cy="46" r="18" fill="#4fae73"/><circle cx="68" cy="46" r="18" fill="#4fae73"/>
+      <rect x="45" y="56" width="10" height="30" rx="3" fill="#7a5230"/></svg>
+      <div class="cta"><span style="font:800 1.2rem var(--head)">🌱 Elvebredden Planteskole</span><b>Se trær</b></div></a>` },
+];
+let adIdx = 0;
+function adModule() {
+  const ad = ADS[adIdx++ % ADS.length];
+  const label = state.demo ? 'eksempelannonse' : 'annonse';
+  return ad.type === 'display' ? `<div class="ad-wrap"><div class="ad-label">${label}</div>${ad.html()}</div>` : ad.html().replace('Annonsørinnhold', state.demo ? 'Eksempel · annonsørinnhold' : 'Annonsørinnhold');
+}
+
+// Forsidemønster: saker + moduler
+const PATTERN = ['hero', '#lys', '#tur', 'pair', 'row', 'row', '#ad', 'bigfull', 'text', 'pair', '#ad', 'overlay', 'row', '#top', 'big', 'pair', 'text', 'row', '#ad', 'bigfull', 'row', 'pair', 'text'];
+function layout(items, isFront) {
+  adIdx = 0;
+  const out = []; const used = new Set();
+  let i = 0, p = 0;
+  const hasImg = (it) => SHOW_SOURCE_IMAGES && !!it.image_url;
+  while (i < items.length) {
+    let k = PATTERN[p % PATTERN.length]; const lap = Math.floor(p / PATTERN.length); p++;
+    if (k.startsWith('#')) {
+      if (k === '#ad') out.push(adModule());
+      else if (isFront && lap === 0 && k === '#lys') out.push(lysModule());
+      else if (isFront && lap === 0 && k === '#tur') out.push(turModule());
+      else if (isFront && lap === 0 && k === '#top') out.push(topModule(grouped()));
+      continue;
+    }
+    if (k === 'hero' && lap > 0) k = 'bigfull';
+    if (k === 'pair') {
+      if (i + 1 >= items.length) { out.push(L.big(items[i++])); continue; }
+      out.push(L.pair(items[i], items[i + 1])); i += 2; continue;
+    }
+    if (k === 'overlay' && !hasImg(items[i])) k = 'text';
+    out.push(L[k](items[i++]));
+  }
+  return out.join('');
+}
+
+// ---------- Visning ----------
+function render() {
+  const items = visible();
+  const isFront = state.section === 'forsiden' && !state.category;
+
+  const groups = grouped();
+  const catsPresent = CATS.filter((c) => groups.some((it) => it.category === c && it.score >= state.minScore));
+
+  // Sidemeny
+  const count = (f) => groups.filter((it) => it.score >= state.minScore && f(it)).length;
+  $('menuSections').innerHTML = SECTIONS.map((s) => `<li><button data-sec="${s.id}" aria-current="${!state.category && s.id === state.section}">${s.label}
+      <span class="count">${count((it) => inSection(it, s.id))}</span></button></li>`).join('');
+  $('menuCats').innerHTML = catsPresent.map((c) => `<li><button data-cat="${esc(c)}" aria-current="${state.category === c}">${esc(c)}
+      <span class="count">${count((it) => it.category === c)}</span></button></li>`).join('');
+  $('segStrict').innerHTML = STRICT.map((s) => `<button data-strict="${s.v}" aria-pressed="${s.v === state.minScore}">${s.label}</button>`).join('');
+  $('segTheme').innerHTML = THEMES.map((t) => `<button data-theme="${t.v}" aria-pressed="${t.v === state.theme}">${t.label}</button>`).join('');
+
+  $('regionSel').innerHTML = REGIONS.map((r) => `<option value="${esc(r.id)}"${r.id === state.region ? ' selected' : ''}>${esc(r.name)}</option>`).join('');
+  // Kilder i menyen
+  const allSrc = new Map();
+  for (const it of state.items) if (!allSrc.has(it.source)) allSrc.set(it.source, it);
+  const srcList = [...allSrc.values()].sort((a, b) => favRank(a.source) - favRank(b.source) || a.source.localeCompare(b.source, 'nb'));
+  $('menuSources').innerHTML = srcList.map((m) => {
+    const on = !srcOff.has(m.source), fav = srcFav.includes(m.source);
+    return `<li class="srcrow${on ? '' : ' off'}">${logo(m)}<span class="nm">${esc(m.source)}</span>
+      <button class="fav${fav ? ' on' : ''}" data-src-fav="${esc(m.source)}" aria-pressed="${fav}" aria-label="Favorittavis">★</button>
+      <button class="sw${on ? ' on' : ''}" role="switch" aria-checked="${on}" data-src-toggle="${esc(m.source)}" aria-label="Vis saker fra ${esc(m.source)}"><i></i></button></li>`;
+  }).join('');
+
+  requestAnimationFrame(fitSources);
+  const { pinned, list } = frontOrder(items);
+  $('feed').innerHTML = items.length ? (pinned ? sunCard(pinned) : '') + layout(list, isFront)
+    : `<div class="empty">${srcOff.size && srcOff.size >= allSrc.size ? 'Alle kilder er skjult.' : 'Ingen saker.'}</div>`;
+}
+
+// ---------- Hendelser ----------
+function setMenu(open) {
+  document.body.classList.toggle('menu-open', open); document.body.classList.toggle('locked', open);
+  $('drawer').setAttribute('aria-hidden', !open); $('openMenu').setAttribute('aria-expanded', open);
+  if (open) $('closeMenu').focus();
+}
+function go(patch) { Object.assign(state, patch); savePrefs(); render(); window.scrollTo({ top: 0 }); }
+
+$('openMenu').addEventListener('click', () => setMenu(true));
+$('closeMenu').addEventListener('click', () => setMenu(false));
+$('scrim').addEventListener('click', () => setMenu(false));
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setMenu(false); });
+$('logoHome').addEventListener('click', (e) => { e.preventDefault(); go({ section: 'forsiden', category: null }); });
+$('regionSel').addEventListener('change', async (e) => { state.region = e.target.value; savePrefs(); await loadLocal(); refreshLocal(); });
+function nearestRegion(lat, lon) {
+  const dist = (r) => (r.lat - lat) ** 2 + ((r.lon - lon) * Math.cos(lat * Math.PI / 180)) ** 2;
+  return [...REGIONS].sort((a, b) => dist(a) - dist(b))[0];
+}
+async function setRegion(r, msg) {
+  state.region = r.id; savePrefs(); $('regionSel').value = r.id;
+  $('locHint').textContent = msg;
+  await loadLocal(); refreshLocal();
+}
+// Postnummer → koordinater via Kartverkets åpne adresse-API → nærmeste område
+$('postForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const nr = $('postnr').value.trim(), hint = $('locHint');
+  if (!/^\d{4}$/.test(nr)) { hint.textContent = 'Fire siffer.'; return; }
+  hint.textContent = 'Søker …';
+  try {
+    const res = await fetch(`https://ws.geonorge.no/adresser/v1/sok?postnummer=${nr}&treffPerSide=1&utkoordsys=4258`);
+    const j = await res.json();
+    const a = j.adresser?.[0];
+    if (!a?.representasjonspunkt) { hint.textContent = `Fant ikke postnummer ${nr}.`; return; }
+    const r = nearestRegion(a.representasjonspunkt.lat, a.representasjonspunkt.lon);
+    const sted = a.poststed ? a.poststed[0] + a.poststed.slice(1).toLowerCase() : '';
+    await setRegion(r, `${nr} ${sted}: viser ${r.name}.`);
+    $('postnr').value = '';
+  } catch { hint.textContent = 'Fant ikke postnummeret.'; }
+});
+function locateRegion() {
+  const hint = $('locHint');
+  if (!navigator.geolocation) { hint.textContent = 'Posisjon er ikke tilgjengelig.'; return; }
+  hint.textContent = 'Søker …';
+  navigator.geolocation.getCurrentPosition(async ({ coords }) => {
+    const r = nearestRegion(coords.latitude, coords.longitude);
+    await setRegion(r, `Nærmeste område: ${r.name}.`);
+  }, () => { hint.textContent = 'Fikk ikke tilgang til posisjon.'; }, { maximumAge: 600000, timeout: 10000 });
+}
+
+document.addEventListener('click', (e) => {
+  const jb = e.target.closest('[data-join],[data-leave],[data-ics],[data-locate]');
+  if (jb) {
+    e.preventDefault();
+    if (jb.dataset.join) joinEvent(jb.dataset.join, false);
+    else if (jb.dataset.leave) joinEvent(jb.dataset.leave, true);
+    else if (jb.dataset.ics) downloadIcs(jb.dataset.ics);
+    else locateRegion();
+    return;
+  }
+  const x = e.target.closest('[data-expand]');
+  if (x) { e.preventDefault(); const box = x.closest('.srcs'); box.classList.add('open'); box.querySelectorAll('[hidden]').forEach((c) => { c.hidden = false; }); x.hidden = true; return; }
+  const xl = e.target.closest('[data-expand-list]');
+  if (xl) {
+    e.preventDefault();
+    const more = xl.closest('.body').querySelector('.srcmore');
+    const open = more.classList.toggle('open');
+    xl.textContent = open ? '×' : `+${xl.closest('.srcs').parentNode.parentNode.querySelectorAll('.srcmore .srcbtn').length - MAX_LOGOS}`;
+    return;
+  }
+  const o = e.target.closest('[data-open]');
+  if (o) { e.preventDefault(); if (o.dataset.open !== '#') window.open(o.dataset.open, '_blank', 'noopener'); return; }
+  const g = e.target.closest('[data-glad]');
+  if (g) { e.preventDefault(); glad(g.dataset.glad); return; }
+  const b = e.target.closest('button'); if (!b) return;
+  const inDrawer = !!b.closest('#drawer');
+  const d = b.dataset;
+  if (d.srcToggle) { srcOff.has(d.srcToggle) ? srcOff.delete(d.srcToggle) : srcOff.add(d.srcToggle); saveSrc(); render(); return; }
+  if (d.srcFav) { srcFav = srcFav.includes(d.srcFav) ? srcFav.filter((x) => x !== d.srcFav) : [...srcFav, d.srcFav]; saveSrc(); render(); return; }
+  if (d.srcAll) { if (d.srcAll === 'on') srcOff.clear(); else state.items.forEach((it) => srcOff.add(it.source)); saveSrc(); render(); return; }
+  if (d.sec) go({ section: d.sec, category: null });
+  else if (d.cat) go({ category: d.cat });
+  else if (d.strict) go({ minScore: Number(d.strict) });
+  else if (d.theme) { state.theme = d.theme; document.documentElement.dataset.theme = d.theme; savePrefs(); render(); return; }
+  else return;
+  if (inDrawer) setMenu(false);
+});
+document.addEventListener('visibilitychange', () => { if (!document.hidden && !state.demo) load(); });
+
+// ---------- Eksempelsaker (vises bare før Supabase er koblet til) ----------
+// Bilder fra Wikimedia Commons (frie lisenser) – kreditert på bildet.
+const cf = (file) => `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(file)}?width=1000`;
+const h = (n) => new Date(Date.now() - n * 3600e3).toISOString();
+const DEMO_LIST = [
+  { kicker: 'Drammenselva:', title_no: 'Villaksen er tilbake i elva – frivillige ryddet i sju år', summary_no: 'Dugnadsgjengen har åpnet gytebekker, og i år ble det registrert mer villaks enn på flere tiår.', score: 9, tone: 'positiv', category: 'Natur og miljø', region: 'lokalt', published_at: h(1), glad_count: 214,
+    image_url: cf('A salmon leaping the Falls of Shin - geograph.org.uk - 2004009.jpg'), photo_credit: 'Foto: Ian Stewart / CC BY-SA' },
+  { kicker: 'Sjakk:', title_no: 'Pensjonistene lærer bort sjakk – nå står 40 elever i kø', summary_no: 'Hver onsdag møtes eldre og elever over brettet.', score: 8, tone: 'positiv', category: 'Mennesker', region: 'lokalt', published_at: h(3), glad_count: 96,
+    image_url: cf('Chess pieces organised.jpg'), photo_credit: 'Foto: Aaaatu / Wikimedia Commons' },
+  { kicker: 'Solenergi:', title_no: 'Ny metode kan halvere prisen på solceller', summary_no: 'Forskere har funnet en enklere produksjonsprosess med mindre materialbruk.', score: 8, tone: 'konstruktiv', category: 'Vitenskap', region: 'verden', published_at: h(2), glad_count: 58,
+    image_url: cf('Photovoltaic Panels at the Travers Solar Farm.jpg'), photo_credit: 'Foto: Kkiefuik / Wikimedia Commons' },
+  { kicker: 'Skole:', title_no: 'Aldri har så mange fullført videregående', summary_no: 'Andelen som fullfører, er den høyeste som noen gang er målt.', score: 8, tone: 'positiv', category: 'Samfunn', region: 'norge', published_at: h(5), glad_count: 41 },
+  { kicker: 'Hval:', title_no: 'Mannskapet kjempet i fire timer – så svømte hvalen fri', summary_no: 'En knølhval satt fast i fiskegarn, men ble skåret løs uten skader.', score: 9, tone: 'positiv', category: 'Dyr', region: 'verden', published_at: h(6), glad_count: 187,
+    image_url: cf('Humpback Whale Breaching in Hervey Bay, Alaska.jpg'), photo_credit: 'Foto: NPS / Kaitlin Thoreson' },
+  { kicker: 'Korps:', title_no: 'Skolekorpset feirer med tre generasjoner på scenen', summary_no: 'Tidligere medlemmer spiller sammen med dagens korps.', score: 7, tone: 'positiv', category: 'Kultur', region: 'lokalt', published_at: h(8), glad_count: 23,
+    image_url: cf('Three bass drums.jpg'), photo_credit: 'Foto: Michaelphayes / Wikimedia Commons' },
+  { kicker: 'Medisin:', title_no: 'Ny behandling gir lovende resultater for sjelden sykdom', summary_no: 'En tidlig studie viser bedring, men større forsøk gjenstår.', score: 7, tone: 'konstruktiv', category: 'Helse', region: 'norge', published_at: h(10), glad_count: 30,
+    image_url: cf('NHGRI researcher uses a pipette to remove DNA from a micro test tube.jpg'), photo_credit: 'Foto: Maggie Bartlett, NHGRI' },
+  { kicker: 'Sykkel:', title_no: 'Ungdom får eget sykkelverksted midt i byen', summary_no: 'Frivillige mekanikere hjelper til.', score: 7, tone: 'konstruktiv', category: 'Samfunn', region: 'lokalt', published_at: h(12), glad_count: 12 },
+  { kicker: 'Yellowstone:', title_no: 'Ulven tilbake i Yellowstone – elvene har hentet seg inn', summary_no: 'Forskere ser at økosystemet har hentet seg inn.', score: 8, tone: 'positiv', category: 'Natur og miljø', region: 'verden', published_at: h(14), glad_count: 77,
+    image_url: cf('Yellowstone Delta Pack wolf (15273417887).jpg'), photo_credit: 'Foto: Yellowstone National Park' },
+  { kicker: 'Fotball:', title_no: 'Lokallaget slo favorittene på Marienlyst', summary_no: '', score: 8, tone: 'positiv', category: 'Idrett', region: 'lokalt', published_at: h(4), glad_count: 64,
+    image_url: cf('Marienlyst soccer stadium, Drammen.jpg'), photo_credit: 'Foto: Wikimedia Commons' },
+  { kicker: 'Helse:', title_no: 'Sykehus kutter ventetiden med nytt analyseverktøy', summary_no: 'Pilotprosjektet sparte flere uker for pasientene.', score: 7, tone: 'konstruktiv', category: 'Teknologi', region: 'norge', published_at: h(9), glad_count: 19,
+    image_url: cf('Close-up of a lab technitian applying a sample to a microscope glass slide with a pipette.jpg'), photo_credit: 'Foto: Shixart1985 / Wikimedia Commons' },
+  { kicker: 'Dugnad:', title_no: 'Naboene bygde ny lekeplass på én helg', summary_no: 'Over hundre frivillige stilte opp.', score: 8, tone: 'positiv', category: 'Mennesker', region: 'norge', published_at: h(16), glad_count: 52,
+    image_url: cf("Children's playground in Teck Whye Gardens.jpg"), photo_credit: 'Foto: Wikimedia Commons' },
+  { kicker: 'Bybrua:', title_no: 'Bybrua får ny belysning', summary_no: 'Ny belysning gjør kveldsturen langs elva lysere og tryggere.', score: 7, tone: 'positiv', category: 'Samfunn', region: 'lokalt', published_at: h(7), glad_count: 38,
+    image_url: cf('Drammen City Bridge, Norway.jpg'), photo_credit: 'Foto: Helen Simonsson / Wikimedia Commons' },
+  { kicker: 'Håndball:', title_no: 'Håndballjentene fylte Drammenshallen – 2000 heiet på breddecupen', summary_no: 'Over hundre lag deltok, og alle fikk medalje.', score: 8, tone: 'positiv', category: 'Idrett', region: 'lokalt', published_at: h(2.5), glad_count: 71,
+    image_url: cf('Drammenshallen.JPG'), photo_credit: 'Foto: ChickenFalls / Wikimedia Commons' },
+  { kicker: 'Turn:', title_no: '800 unge turnere stilte til start – mange tok sin første medalje', summary_no: 'Turnfesten samlet klubber fra hele fylket.', score: 8, tone: 'positiv', category: 'Idrett', region: 'lokalt', published_at: h(11), glad_count: 44,
+    image_url: cf('BuskerudTrampetten 2013 (panorama).jpg'), photo_credit: 'Foto: Wikimedia Commons' },
+  { kicker: 'Ski:', title_no: 'Løypene er åpnet – 40 km nypreparert i marka', summary_no: 'Frivillige i skiklubben kjørte opp løypene i natt.', score: 8, tone: 'positiv', category: 'Idrett', region: 'lokalt', published_at: h(1.5), glad_count: 133 },
+  { kicker: 'Fotball:', title_no: 'Stoppet foran mål for å hjelpe skadet motstander – applaus fra hele stadion', summary_no: '', score: 9, tone: 'positiv', category: 'Idrett', region: 'verden', published_at: h(13), glad_count: 98 },
+];
+// Oppdiktede kilder (ingen ekte aviser i demoen)
+const DEMO_SRC = { lokalt: 'Elvebyen Avis', norge: 'Riksnytt', verden: 'Verdensposten', idrett: 'Sportsbladet' };
+DEMO_LIST.push(
+  { kicker: 'Ozonlaget:', title_no: 'Hullet over Antarktis er det minste på flere tiår', summary_no: 'Forskerne viser til det globale forbudet mot ozonnedbrytende stoffer.', score: 10, tone: 'positiv', category: 'Natur og miljø', region: 'verden', published_at: h(20), glad_count: 412, pinned_until: new Date(Date.now() + 8 * 3600e3).toISOString() },
+  { kicker: 'Lier:', title_no: 'Hele Lierbyen plantet epletrær langs skoleveien', summary_no: 'Elever og naboer satte ned 60 trær på én lørdag.', score: 8, tone: 'positiv', category: 'Natur og miljø', region: 'lokalt', area: 'lier', published_at: h(3.5), glad_count: 22 },
+  { kicker: 'Kongsberg:', title_no: 'Gammel sølvgruve blir opplevelsessenter for barn', summary_no: 'Kongsberg får ny læringsarena i fjellet.', score: 7, tone: 'konstruktiv', category: 'Kultur', region: 'lokalt', area: 'kongsberg', published_at: h(2.2), glad_count: 15 },
+  { kicker: 'Hokksund:', title_no: 'Frivillige åpnet gratis leksehjelp på biblioteket', summary_no: 'Over 30 elever kom første kveld.', score: 8, tone: 'konstruktiv', category: 'Samfunn', region: 'lokalt', area: 'ovre-eiker', published_at: h(5.5), glad_count: 18 },
+);
+const DEMO_SRC_AREA = { lier: 'Lierposten', kongsberg: 'Kongsberg Dagblad', 'ovre-eiker': 'Eikerbladet' };
+const DEMO_BASE = DEMO_LIST.map((d, i) => ({ id: `demo${i}`, url: '#', ...d,
+  area: d.area || (d.region === 'lokalt' ? 'drammen' : null),
+  source: DEMO_SRC_AREA[d.area] || DEMO_SRC[d.category === 'Idrett' && d.region !== 'lokalt' ? 'idrett' : d.region] }));
+const also = (i, ...names) => names.map((n) => ({ ...DEMO_BASE[i], id: `${DEMO_BASE[i].id}-${n}`, story_id: DEMO_BASE[i].id, source: n, glad_count: 0 }));
+const DEMO = [...DEMO_BASE, ...also(0, 'Buskerud Blad', 'Riksnytt', 'Ekko Drammen', 'Vestviken Tidende'), ...also(4, 'Riksnytt', 'Kystavisa', 'Havbladet', 'Nordlys Nett'), ...also(1, 'Buskerud Blad'),
+  ...also(13, 'Buskerud Blad', 'Sportsbladet'), ...also(16, 'Riksnytt', 'Verdensposten')];
+
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+$('year').textContent = new Date().getFullYear();
+loadRegions().then(load);
+</script>
+</body>
+</html>

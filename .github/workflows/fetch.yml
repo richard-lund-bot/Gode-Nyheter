@@ -1,0 +1,31 @@
+name: Hent gode nyheter
+
+on:
+  schedule:
+    - cron: '7,37 * * * *'   # hver halvtime
+  workflow_dispatch:          # manuell kjøring fra Actions-fanen
+
+concurrency:
+  group: fetch-news
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node scripts/fetch.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          MAX_PER_RUN: '120'
+          MET_CONTACT: ${{ vars.MET_CONTACT }}   # e-post eller nettside – påkrevd av MET Norway
+          GLAD_PIN: ${{ vars.GLAD_PIN }}         # valgfritt, standard 150
+          PIN_HOURS: ${{ vars.PIN_HOURS }}       # valgfritt, standard 12

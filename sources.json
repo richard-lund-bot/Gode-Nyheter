@@ -1,0 +1,17 @@
+[
+  {"name": "NRK Buskerud", "url": "https://www.nrk.no/buskerud/toppsaker.rss", "region": "lokalt", "lang": "no", "publisher": "NRK"},
+  {"name": "Google Nyheter: Buskerud", "url": "https://news.google.com/rss/search?q=Buskerud&hl=no&gl=NO&ceid=NO:no", "region": "lokalt", "lang": "no", "aggregator": true},
+  {"name": "NRK", "url": "https://www.nrk.no/toppsaker.rss", "region": "norge", "lang": "no", "publisher": "NRK"},
+  {"name": "NRK Norge", "url": "https://www.nrk.no/norge/toppsaker.rss", "region": "norge", "lang": "no", "publisher": "NRK"},
+  {"name": "NRK Kultur", "url": "https://www.nrk.no/kultur/toppsaker.rss", "region": "norge", "lang": "no", "publisher": "NRK"},
+  {"name": "NRK Sport", "url": "https://www.nrk.no/sport/toppsaker.rss", "region": "norge", "lang": "no", "publisher": "NRK"},
+  {"name": "BBC News", "url": "https://feeds.bbci.co.uk/news/world/rss.xml", "region": "verden", "lang": "en", "publisher": "BBC"},
+  {"name": "BBC Science", "url": "https://feeds.bbci.co.uk/news/science_and_environment/rss.xml", "region": "verden", "lang": "en", "publisher": "BBC"},
+  {"name": "The Guardian", "url": "https://www.theguardian.com/world/rss", "region": "verden", "lang": "en"},
+  {"name": "Positive News", "url": "https://www.positive.news/feed/", "region": "verden", "lang": "en"},
+  {"name": "Good News Network", "url": "https://www.goodnewsnetwork.org/feed/", "region": "verden", "lang": "en"},
+  {"name": "Google Nyheter: Strømsgodset", "url": "https://news.google.com/rss/search?q=Str%C3%B8msgodset&hl=no&gl=NO&ceid=NO:no", "region": "lokalt", "lang": "no", "aggregator": true, "area": "drammen"},
+  {"name": "Google Nyheter: Drammen idrett", "url": "https://news.google.com/rss/search?q=Drammen+idrett+OR+Drammen+HK+OR+Drammen+Strong&hl=no&gl=NO&ceid=NO:no", "region": "lokalt", "lang": "no", "aggregator": true, "area": "drammen"},
+  {"name": "NRK Sport siste", "url": "https://www.nrk.no/sport/siste.rss", "region": "norge", "lang": "no", "publisher": "NRK"},
+  {"name": "BBC Sport", "url": "https://feeds.bbci.co.uk/sport/rss.xml", "region": "verden", "lang": "en", "publisher": "BBC"}
+]
