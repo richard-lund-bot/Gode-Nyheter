@@ -394,4 +394,6 @@ const { error: delErr } = await db.from('articles')
 if (delErr) console.warn(`Opprydding feilet: ${delErr.message}`);
 
 console.log(`Lagret ${saved} (${good} gode, score ≥ 7, ${clustered} knyttet til samme sak fra andre kilder). Feilet: ${failed}.`);
-if (failed && !saved) process.exit(1);
+// Avslutt eksplisitt. En feed som svarer med feil (f.eks. 403) etterlater en åpen forbindelse, og uten dette
+// blir jobben hengende til serveren i den andre enden gir opp – flere minutter.
+process.exit(failed && !saved ? 1 : 0);
