@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: '7,37 * * * *'   # hver halvtime
   workflow_dispatch:          # manuell kjøring fra Actions-fanen
+    inputs:
+      debug:
+        description: 'Feilsøking: skriv ut hva jobben finner på artikkelsidene'
+        type: boolean
+        default: false
 
 concurrency:
   group: fetch-news
@@ -28,5 +33,6 @@ jobs:
           MAX_PER_RUN: '120'
           # e-post eller nettside – påkrevd av MET Norway. Leses fra Variables, eller fra Secrets hvis den ligger der.
           MET_CONTACT: ${{ vars.MET_CONTACT || secrets.MET_CONTACT }}
+          DEBUG_ENRICH: ${{ inputs.debug }}
           GLAD_PIN: ${{ vars.GLAD_PIN }}         # valgfritt, standard 150
           PIN_HOURS: ${{ vars.PIN_HOURS }}       # valgfritt, standard 12

@@ -37,7 +37,7 @@ Uten nøkler viser `index.html` eksempelsaker, slik at du kan jobbe med designet
 
 ## Bilder og titler (v0.2)
 
-- Bildet hentes fra feeden (`media:content`, `media:thumbnail`, `enclosure`). For gode saker uten bilde slås `og:image` opp på artikkelsiden (maks 40 per kjøring). Google Nyheter-saker har ingen bilder og får en illustrasjon i temafargen.
+- Bildet hentes fra feeden (`media:content`, `media:thumbnail`, `enclosure`). For saker uten bilde slås `og:image` opp på artikkelsiden – også for saker fra Google Nyheter (se v1.7).
 - Claude skriver en fengende tittel og et stikkord (`kicker`, f.eks. «Endelig:»), men titlene skal fortsatt være sanne. Originaltittelen ligger i `original_title`.
 - Har du allerede tabellen fra v0.1, kjører du `schema.sql` på nytt. Den legger til de nye kolonnene.
 - `SHOW_SOURCE_IMAGES = false` i `index.html` slår av kildebilder og bruker bare illustrasjoner.
@@ -57,6 +57,20 @@ Uten nøkler viser `index.html` eksempelsaker, slik at du kan jobbe med designet
 - Nye kilder: NRK Sport siste, BBC Sport og Google Nyheter-søk på Strømsgodset og Drammen-idrett.
 - Prompten slipper gjennom seire, rekorder, fair play, breddeidrett og mestring (7–9), men holder tap, skader, skandaler og overgangsrykter nede (maks 5).
 
+## Bilder, pluss-saker og avisrekkefølge (v1.7)
+
+**Bilder og egentlig lenke.** Google Nyheter gir bare en omvei-lenke uten bilde. For saker som skal vises (score 6 eller høyere) finner jobben avisas egen adresse bak lenken, åpner artikkelsiden og henter bildet (`og:image`). Nettsiden lenker rett til avisa. Høyst `MAX_LOOKUPS` sider (standard 60) åpnes per kjøring; resten tas i neste kjøring. Svarer ikke Google, lagres saken uten bilde og prøves igjen senere.
+
+**Saker uten bilde** får aldri en tom bildeflate. De vises som rene overskrifter, samlet i blokker på inntil fire (`LINES_MAX` i `index.html`), eller som tekstkort der mønsteret har en tekstplass. Har flere aviser samme sak, lånes bildet fra den som har et.
+
+**Pluss-saker.** Jobben leser merkingen avisene selv bruker overfor Google og Facebook (`isAccessibleForFree` i schema.org og `article:content_tier`) og lagrer den i `paywall` (true = pluss, false = åpen, null = ukjent). Nettsiden viser et gult **+** ved hver avis som krever abonnement. Når flere aviser har samme sak, vises alle med hvert sitt merke, og kortet åpner en åpen utgave foran en pluss-utgave – med mindre du har satt din egen rekkefølge.
+
+**Aviser i menyen.** Lista ligger i en sammenleggbar del. Bryteren skjuler en avis helt. Dra i håndtaket (eller bruk piltastene) for å endre rekkefølgen: avisa øverst åpnes først når flere har samme sak. Rekkefølgen lagres i nettleseren.
+
+**Feilsøking.** Start jobben manuelt med «debug» slått på for å se hva den finner på hver artikkelside.
+
+Kjør `schema.sql` på nytt (kolonnene `direct_url`, `paywall` og `enriched_at`).
+
 ## Idrett på forsiden (v1.6)
 
 - Forsiden viser bare **gode norske og lokale bragder**: lokal idrett med score 7 eller høyere (ikke fra områder langt unna deg) og norsk idrett med score 8 eller høyere. Internasjonal idrett vises ikke på forsiden.
@@ -69,8 +83,8 @@ Uten nøkler viser `index.html` eksempelsaker, slik at du kan jobbe med designet
 
 - **Klynging:** Claude får med titlene på sakene fra siste 48 timer og sier om en ny sak gjelder *samme konkrete hendelse* (`same_as` / `same_as_i`). Slike saker får `story_id` = id-en til saken som leder historien. Nettsiden slår dem sammen til ett kort.
 - **Logoer:** Favicon hentes fra kildens domene (`source_domain`) via DuckDuckGo sin ikontjeneste. Uten ikon vises initialer i en farget sirkel. Google Nyheter-saker får domenet til den egentlige avisa.
-- **«Les hos»:** Store kort viser kildene som knapper med logo og navn. Små kort viser logoene etter hverandre og antall kilder. Trykker du på selve kortet, åpnes favorittavisa di hvis den har saken.
-- **Kilder i menyen:** Slå hver kilde av og på, og stjernemerk favoritter. Lagres i nettleseren.
+- **«Les hos»:** Store kort viser avisene som knapper med logo og navn. Små kort viser logoene etter hverandre og antall aviser. Trykker du på selve kortet, åpnes avisa du har satt øverst, hvis den har saken.
+- **Aviser i menyen:** Slå hver avis av og på, og dra dem i ønsket rekkefølge (se v1.7). Lagres i nettleseren.
 - `publisher` i `sources.json` slår sammen feeder fra samme utgiver (f.eks. alle NRK-feedene → «NRK»).
 - Kjør `schema.sql` på nytt (nye kolonner `story_id` og `source_domain`).
 

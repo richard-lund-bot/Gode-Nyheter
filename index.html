@@ -179,8 +179,42 @@
   .srclist li .lg b { font-size: .65rem; }
   .srclist .nm { flex: 1; font-weight: 700; }
   .srclist li.off .nm, .srclist li.off .lg { opacity: .4; }
-  .fav { border: 0; background: none; font-size: 1.25rem; color: var(--line); cursor: pointer; padding: 2px 4px; }
-  .fav.on { color: var(--m-sol-bg); }
+  /* Aviser i menyen: sammenleggbar liste med av/på og drahåndtak for rekkefølge */
+  .fold { margin-top: 22px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .fold summary { list-style: none; display: flex; align-items: center; gap: 8px; padding: 13px 2px; cursor: pointer; }
+  .fold summary::-webkit-details-marker { display: none; }
+  .fold summary h3 { margin: 0; }
+  .fold-n { margin-left: auto; font-size: .8rem; color: var(--muted); }
+  .fold summary::after { content: ''; width: 8px; height: 8px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted);
+                         transform: rotate(45deg); margin: 0 6px 4px 4px; transition: transform .15s; }
+  .fold[open] summary::after { transform: rotate(-135deg); margin-bottom: -4px; }
+  .fold .hint { margin: 0 2px 10px; }
+  .fold .srclist { counter-reset: rang; margin-bottom: 10px; }
+  .fold .srclist li { counter-increment: rang; }
+  .fold .srclist li::before { content: counter(rang); width: 1.3em; text-align: right; font: 700 .75rem var(--sans); color: var(--muted); flex: none; }
+  .grip { border: 0; background: none; color: var(--muted); padding: 8px 4px; margin: -4px -4px -4px -6px; cursor: grab; touch-action: none;
+          display: grid; place-items: center; flex: none; border-radius: 6px; }
+  .grip:active { cursor: grabbing; }
+  .srclist li.dragging { background: var(--well); box-shadow: 0 4px 14px rgba(0,0,0,.2); border-radius: 8px; position: relative; z-index: 1; }
+  body.sorting { user-select: none; -webkit-user-select: none; }
+  /* Pluss-saker: gult merke ved avisa som krever abonnement */
+  .pl { display: inline-grid; place-items: center; min-width: 15px; height: 15px; padding: 0 3px; border-radius: 4px; background: var(--m-sol-bg);
+        color: #3a2400; font: 900 .74rem/1 var(--sans); flex: none; }
+  .srcbtn.icon { position: relative; }
+  .srcbtn.icon .pl { position: absolute; right: -6px; bottom: -4px; min-width: 13px; height: 13px; padding: 0; font-size: .62rem; border-radius: 50%; box-shadow: 0 0 0 1.5px var(--card); }
+  .srcs .icon.is-plus + .icon { margin-left: 1px; }
+  .src1 .pl { margin-left: 1px; }
+  /* Saker uten bilde: rene overskrifter i en samlet blokk */
+  .lines { background: var(--card); border-radius: 6px; overflow: hidden; }
+  .lines .card { border-radius: 0; }
+  .line { border-left: 5px solid var(--mc); }
+  .line + .line { border-top: 1px solid var(--line); }
+  .line .body { padding: 10px 12px 11px; }
+  .line .t { font-size: 1.15rem; line-height: 1.12; }
+  /* Bildet lot seg ikke laste: skjul bildeflaten i stedet for å vise en tom boks */
+  .card.noimg .ph { display: none; }
+  .row.noimg { grid-template-columns: 1fr; }
+  .hero.noimg { display: block; }
   .sw { width: 42px; height: 24px; border-radius: 99px; border: 0; background: var(--line); position: relative; cursor: pointer; flex: none; }
   .sw i { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: left .15s; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
   .sw.on { background: var(--m-lys); }
@@ -328,14 +362,16 @@
   <ul class="menu-list" id="menuCats"></ul>
   <h3>Filter</h3>
   <div class="seg" id="segStrict"></div>
-  <h3>Kilder</h3>
-  <div class="srcctl"><button data-src-all="on">Vis alle</button><button data-src-all="off">Skjul alle</button></div>
-  <ul class="srclist" id="menuSources"></ul>
-  <p class="hint">★ åpnes først</p>
+  <details class="fold" id="srcFold">
+    <summary><h3>Aviser</h3><span class="fold-n" id="srcCount"></span></summary>
+    <p class="hint">Dra i håndtaket for å endre rekkefølgen. Avisa øverst åpnes først når flere har samme sak. Bryteren skjuler en avis helt.</p>
+    <div class="srcctl"><button data-src-all="on">Vis alle</button><button data-src-all="off">Skjul alle</button></div>
+    <ul class="srclist" id="menuSources"></ul>
+  </details>
   <h3>Utseende</h3>
   <div class="seg" id="segTheme"></div>
   <h3>Om</h3>
-  <p class="about">Saker fra norske og utenlandske kilder, valgt og oppsummert av AI. Hele saken leses hos kilden.</p>
+  <p class="about">Saker fra norske og utenlandske kilder, valgt og oppsummert av AI. Hele saken leses hos kilden. <span class="pl">+</span> betyr at saken krever abonnement hos den avisa.</p>
 </aside>
 
 <main class="page">
@@ -504,7 +540,7 @@ async function load(refresh = false) {
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) { state.demo = true; state.items = DEMO; await loadLocal(); return render(); }
   const local = loadLocal();
   try {
-    const url = `${SUPABASE_URL}/rest/v1/articles?select=id,story_id,url,source,source_domain,area,pinned_until,kicker,title_no,summary_no,image_url,score,tone,category,region,published_at,glad_count`
+    const url = `${SUPABASE_URL}/rest/v1/articles?select=id,story_id,url,direct_url,paywall,source,source_domain,area,pinned_until,kicker,title_no,summary_no,image_url,score,tone,category,region,published_at,glad_count`
       + `&score=gte.6&order=published_at.desc&limit=300`;
     const res = await fetch(url, { headers: sbHeaders() });
     if (!res.ok) throw new Error(res.status);
@@ -531,12 +567,16 @@ async function glad(id) {
   }
 }
 
-// ---------- Kilder: samme sak fra flere aviser + valg av kilder ----------
+// ---------- Aviser: samme sak fra flere aviser, av/på og rekkefølge ----------
 const srcOff = new Set(store.get('gn-src-off', []));
-let srcFav = store.get('gn-src-fav', []);
-const saveSrc = () => { store.set('gn-src-off', [...srcOff]); store.set('gn-src-fav', srcFav); };
-const favRank = (s) => { const i = srcFav.indexOf(s); return i < 0 ? 99 : i; };
-// Slår sammen artikler med samme story_id til én sak med liste over kilder (favoritter først)
+// Prioritert rekkefølge: avisa øverst åpnes først når flere har samme sak. (Arver de gamle stjernemerkede favorittene.)
+let srcOrder = store.get('gn-src-order', null) || store.get('gn-src-fav', []);
+const saveSrc = () => { store.set('gn-src-off', [...srcOff]); store.set('gn-src-order', srcOrder); };
+const srcRank = (s) => { const i = srcOrder.indexOf(s); return i < 0 ? 9999 : i; };
+const href = (m) => m.direct_url || m.url;   // avisas egen adresse når vi har den, ellers lenken fra feeden
+const isPlus = (m) => m.paywall === true;
+// Slår sammen artikler med samme story_id til én sak med liste over aviser.
+// Rekkefølge: din prioritering først, deretter åpne saker foran pluss-saker.
 function grouped() {
   const map = new Map();
   for (const it of state.items) {
@@ -547,10 +587,12 @@ function grouped() {
   return [...map.entries()].map(([k, ms]) => {
     const lead = ms.find((m) => String(m.id) === k) || [...ms].sort((a, b) => b.score - a.score)[0];
     const seen = new Set();
-    const sources = [...ms].sort((a, b) => favRank(a.source) - favRank(b.source) || b.score - a.score)
+    const sources = [...ms].sort((a, b) => srcRank(a.source) - srcRank(b.source) || isPlus(a) - isPlus(b) || b.score - a.score)
       .filter((m) => !seen.has(m.source) && seen.add(m.source));
     const pins = ms.map((m) => m.pinned_until).filter(Boolean).sort();
-    return { ...lead, score: Math.max(...ms.map((m) => m.score)), url: sources[0].url, sources, pinned_until: pins.at(-1) || null };
+    const pic = lead.image_url ? lead : ms.find((m) => m.image_url);   // mangler hovedsaken bilde, lån fra en av de andre avisene
+    return { ...lead, score: Math.max(...ms.map((m) => m.score)), url: href(sources[0]), sources, pinned_until: pins.at(-1) || null,
+      image_url: pic?.image_url || null, photo_credit: pic?.photo_credit };
   });
 }
 const base = () => grouped().filter((it) => it.score >= state.minScore)
@@ -592,37 +634,47 @@ function photo(it, badge = true) {
   const [c1, c2] = CAT_COLORS[it.category] || ['#6b8f71', '#2f5d43'];
   const m = MOODS[mood(it)];
   const img = SHOW_SOURCE_IMAGES && it.image_url
-    ? `<img src="${esc(it.image_url)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.classList.remove('has-img');this.remove()">` : '';
+    ? `<img src="${esc(it.image_url)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="imgFail(this)">` : '';
   return `<div class="ph${img ? ' has-img' : ''}" data-cat="${esc(it.category || '')}" style="--c1:${c1};--c2:${c2}">${img}
     ${badge ? `<span class="accent" style="background:${m.bg}"></span>` : ''}
     ${img && it.photo_credit ? `<span class="credit">${esc(it.photo_credit)}</span>` : ''}</div>`;
 }
+// Bildet lot seg ikke laste: skjul bildeflaten (unntatt der teksten ligger oppå bildet)
+function imgFail(img) {
+  const ph = img.parentNode, c = ph.closest('.card');
+  img.remove(); ph.classList.remove('has-img');
+  if (c && !c.classList.contains('overlay')) c.classList.add('noimg');
+}
+const noImg = (it) => SHOW_SOURCE_IMAGES && !it.image_url;
 const hue = (s) => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 7);
 const initials = (s) => s.split(/[\s.-]+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
 const favicon = (d) => `https://icons.duckduckgo.com/ip3/${encodeURIComponent(d)}.ico`;
 const logo = (m) => `<span class="lg" style="--h:${hue(m.source)}"><b>${esc(initials(m.source))}</b>${m.source_domain
   ? `<img src="${favicon(m.source_domain)}" alt="" loading="lazy" onload="if(this.naturalWidth<8)this.remove()" onerror="this.remove()">` : ''}</span>`;
-const chip = (m) => `<button class="srcbtn" data-open="${esc(m.url)}">${logo(m)}${esc(m.source)}</button>`;
+const plusTag = (m) => isPlus(m) ? `<span class="pl" role="img" aria-label="pluss-sak" title="Pluss-sak hos ${esc(m.source)} – krever abonnement">+</span>` : '';
+const chip = (m) => `<button class="srcbtn" data-open="${esc(href(m))}">${logo(m)}${esc(m.source)}${plusTag(m)}</button>`;
 const MAX_LOGOS = 3;
+let drag = null;   // avisa som dras i menyen akkurat nå (se «Aviser: dra i håndtaket» lenger ned)
+const GRIP = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><circle cx="5" cy="3" r="1.5"/><circle cx="11" cy="3" r="1.5"/><circle cx="5" cy="8" r="1.5"/><circle cx="11" cy="8" r="1.5"/><circle cx="5" cy="13" r="1.5"/><circle cx="11" cy="13" r="1.5"/></svg>';
 function sourcesEl(it, rich) {
-  // Store kort: så mange knapper som får plass på én linje, resten bak «+N» (regnes ut i fitSources)
+  // Store kort: så mange knapper som får plass på én linje, resten bak «N til» (regnes ut i fitSources)
   if (rich) return `<span class="srcs rich">${it.sources.map(chip).join('')}<button class="srcbtn plus" data-expand hidden></button></span>`;
-  // Små kort: inntil 3 logoer, deretter «+N» som folder ut en liste under
+  // Små kort: inntil 3 logoer (med pluss-merke der det gjelder), deretter «N til» som folder ut en liste under
   const extra = it.sources.length - MAX_LOGOS;
-  return `<span class="srcs">${it.sources.slice(0, MAX_LOGOS).map((m) => `<button class="srcbtn icon" data-open="${esc(m.url)}" aria-label="Les i ${esc(m.source)}">${logo(m)}</button>`).join('')}`
-    + (extra > 0 ? `<button class="plus sm" data-expand-list aria-label="Vis alle ${it.sources.length} kilder">+${extra}</button>` : `<span class="n">${it.sources.length} kilder</span>`) + '</span>';
+  return `<span class="srcs">${it.sources.slice(0, MAX_LOGOS).map((m) => `<button class="srcbtn icon${isPlus(m) ? ' is-plus' : ''}" data-open="${esc(href(m))}" aria-label="Les i ${esc(m.source)}${isPlus(m) ? ' (pluss-sak)' : ''}">${logo(m)}${plusTag(m)}</button>`).join('')}`
+    + (extra > 0 ? `<button class="plus sm" data-expand-list aria-label="Vis alle ${it.sources.length} aviser">${extra} til</button>` : `<span class="n">${it.sources.length} aviser</span>`) + '</span>';
 }
 function fitSources() {
   document.querySelectorAll('.srcs.rich:not(.open)').forEach((box) => {
     const chips = [...box.querySelectorAll('.srcbtn:not(.plus)')], plus = box.querySelector('.plus');
     chips.forEach((c) => { c.hidden = false; }); plus.hidden = true;
-    const avail = box.clientWidth, gap = 6, plusW = 48;
+    const avail = box.clientWidth, gap = 6, plusW = 58;
     let used = 0, hidden = 0;
     chips.forEach((c, i) => {
       const w = c.offsetWidth + gap, last = i === chips.length - 1;
       if (hidden || (i > 0 && used + w > avail - (last ? 0 : plusW))) { c.hidden = true; hidden++; } else used += w;
     });
-    if (hidden) { plus.hidden = false; plus.textContent = `+${hidden}`; plus.setAttribute('aria-label', `Vis ${hidden} kilder til`); }
+    if (hidden) { plus.hidden = false; plus.textContent = `${hidden} til`; plus.setAttribute('aria-label', `Vis ${hidden} aviser til`); }
   });
 }
 addEventListener('resize', () => requestAnimationFrame(fitSources));
@@ -630,7 +682,9 @@ const title = (it) => `<h2 class="t">${it.kicker ? `<span class="kicker">${esc(i
 const gladBtn = (it) => { const on = gladSet.has(String(it.id)); return `<button class="glad${on ? ' on' : ''}" data-glad="${esc(it.id)}" aria-label="Dette gledet meg">${ICON.sol}<span>${it.glad_count || 0}</span></button>`; };
 const meta = (it, short) => {
   const multi = it.sources.length > 1, one = it.sources[0];
-  const src = short ? (multi ? sourcesEl(it, false) : '') : (multi ? '' : `<span class="src1">${logo(one)}${esc(one.source)}</span><span>·</span>`);
+  // Én avis: navn (store kort) eller bare logo med pluss-merke (små kort, og bare når det er en pluss-sak)
+  const src = short ? (multi ? sourcesEl(it, false) : isPlus(one) ? `<span class="src1" title="${esc(one.source)}">${logo(one)}${plusTag(one)}</span>` : '')
+    : (multi ? '' : `<span class="src1">${logo(one)}${esc(one.source)}${plusTag(one)}</span><span>·</span>`);
   const place = it.region === 'lokalt' && it.area ? areaOf(it.area)?.name : null;
   return `<div class="meta"><span class="region">${it.category === 'Idrett' && !place ? 'Idrett' : place || REGION_LABEL[it.region] || ''}</span>${src}<span>${timeAgo(it.published_at)}</span>${gladBtn(it)}</div>`
     + (!short && multi ? `<div class="readat"><span class="lbl">Les hos</span>${sourcesEl(it, true)}</div>` : '')
@@ -640,7 +694,7 @@ const card = (it, cls, inner) => `<a class="card ${cls}" href="${esc(it.url)}" t
 const sum = (it) => it.summary_no ? `<p class="sum">${esc(it.summary_no)}</p>` : '';
 
 // Festet sak – ligger øverst en periode (gullramme, ingen etikett)
-const sunCard = (it) => `<div class="sun-wrap">${card(it, 'sun', `${photo(it, false)}<div class="body">${title(it)}${sum(it)}${meta(it)}</div>`)}</div>`;
+const sunCard = (it) => `<div class="sun-wrap">${card(it, 'sun', `${noImg(it) ? '' : photo(it, false)}<div class="body">${title(it)}${sum(it)}${meta(it)}</div>`)}</div>`;
 const L = {
   hero:    (it) => card(it, 'hero', `${photo(it)}<div class="body">${title(it)}${sum(it)}${meta(it)}</div>`),
   bigfull: (it) => card(it, 'bigfull', `${photo(it)}<div class="body">${title(it)}${meta(it)}</div>`),
@@ -649,6 +703,7 @@ const L = {
   row:     (it) => card(it, 'row inset', `${photo(it, false)}<div class="body">${title(it)}${meta(it, true)}</div>`),
   text:    (it) => `<div class="text-wrap inset">${card(it, `textcard m-${mood(it)}`, `${title(it)}${sum(it)}${meta(it)}`)}</div>`,
   pair:    (a, b) => `<div class="pair inset">${[a, b].map((it) => card(it, '', `${photo(it)}<div class="body">${title(it)}${meta(it, true)}</div>`)).join('')}</div>`,
+  line:    (it) => card(it, 'line', `<div class="body">${title(it)}${meta(it)}</div>`),   // sak uten bilde: ren overskrift
 };
 
 // ---------- Moduler ----------
@@ -878,11 +933,11 @@ function adModule() {
 
 // Forsidemønster: saker + moduler
 const PATTERN = ['hero', '#lys', '#tur', 'pair', 'row', 'row', '#ad', 'bigfull', 'text', 'pair', '#ad', 'overlay', 'row', '#top', 'big', 'pair', 'text', 'row', '#ad', 'bigfull', 'row', 'pair', 'text'];
+const LINES_MAX = 4;   // så mange saker uten bilde samles i én blokk med rene overskrifter
 function layout(items, isFront) {
   adIdx = 0;
-  const out = []; const used = new Set();
+  const out = [];
   let i = 0, p = 0;
-  const hasImg = (it) => SHOW_SOURCE_IMAGES && !!it.image_url;
   while (i < items.length) {
     let k = PATTERN[p % PATTERN.length]; const lap = Math.floor(p / PATTERN.length); p++;
     if (k.startsWith('#')) {
@@ -893,11 +948,18 @@ function layout(items, isFront) {
       continue;
     }
     if (k === 'hero' && lap > 0) k = 'bigfull';
+    // Saker uten bilde får aldri en tom bildeflate: toppsaken og tekstplassene blir tekstkort,
+    // ellers samles de som rene overskrifter og tar én plass i mønsteret.
+    if (noImg(items[i])) {
+      if (k === 'hero' || k === 'text') { out.push(L.text(items[i++])); continue; }
+      const block = [];
+      while (i < items.length && noImg(items[i]) && block.length < LINES_MAX) block.push(L.line(items[i++]));
+      out.push(`<div class="lines inset">${block.join('')}</div>`); continue;
+    }
     if (k === 'pair') {
-      if (i + 1 >= items.length) { out.push(L.big(items[i++])); continue; }
+      if (i + 1 >= items.length || noImg(items[i + 1])) { out.push(L.big(items[i++])); continue; }
       out.push(L.pair(items[i], items[i + 1])); i += 2; continue;
     }
-    if (k === 'overlay' && !hasImg(items[i])) k = 'text';
     out.push(L[k](items[i++]));
   }
   return out.join('');
@@ -925,13 +987,16 @@ function render() {
   // Kilder i menyen
   const allSrc = new Map();
   for (const it of state.items) if (!allSrc.has(it.source)) allSrc.set(it.source, it);
-  const srcList = [...allSrc.values()].sort((a, b) => favRank(a.source) - favRank(b.source) || a.source.localeCompare(b.source, 'nb'));
-  $('menuSources').innerHTML = srcList.map((m) => {
-    const on = !srcOff.has(m.source), fav = srcFav.includes(m.source);
-    return `<li class="srcrow${on ? '' : ' off'}">${logo(m)}<span class="nm">${esc(m.source)}</span>
-      <button class="fav${fav ? ' on' : ''}" data-src-fav="${esc(m.source)}" aria-pressed="${fav}" aria-label="Favorittavis">★</button>
-      <button class="sw${on ? ' on' : ''}" role="switch" aria-checked="${on}" data-src-toggle="${esc(m.source)}" aria-label="Vis saker fra ${esc(m.source)}"><i></i></button></li>`;
-  }).join('');
+  if (!drag) {   // ikke tegn lista på nytt mens en avis dras
+    const srcList = [...allSrc.values()].sort((a, b) => srcRank(a.source) - srcRank(b.source) || a.source.localeCompare(b.source, 'nb'));
+    $('menuSources').innerHTML = srcList.map((m) => {
+      const on = !srcOff.has(m.source);
+      return `<li class="srcrow${on ? '' : ' off'}" data-src="${esc(m.source)}">
+        <button class="grip" data-grip aria-label="Flytt ${esc(m.source)}. Dra, eller bruk pil opp og pil ned.">${GRIP}</button>${logo(m)}<span class="nm">${esc(m.source)}</span>
+        <button class="sw${on ? ' on' : ''}" role="switch" aria-checked="${on}" data-src-toggle="${esc(m.source)}" aria-label="Vis saker fra ${esc(m.source)}"><i></i></button></li>`;
+    }).join('');
+    $('srcCount').textContent = `${srcList.filter((m) => !srcOff.has(m.source)).length} av ${srcList.length} vises`;
+  }
 
   requestAnimationFrame(fitSources);
   const { pinned, list } = frontOrder(items);
@@ -1006,7 +1071,7 @@ document.addEventListener('click', (e) => {
     e.preventDefault();
     const more = xl.closest('.body').querySelector('.srcmore');
     const open = more.classList.toggle('open');
-    xl.textContent = open ? '×' : `+${xl.closest('.srcs').parentNode.parentNode.querySelectorAll('.srcmore .srcbtn').length - MAX_LOGOS}`;
+    xl.textContent = open ? '×' : `${xl.closest('.body').querySelectorAll('.srcmore .srcbtn').length - MAX_LOGOS} til`;
     return;
   }
   const o = e.target.closest('[data-open]');
@@ -1017,7 +1082,6 @@ document.addEventListener('click', (e) => {
   const inDrawer = !!b.closest('#drawer');
   const d = b.dataset;
   if (d.srcToggle) { srcOff.has(d.srcToggle) ? srcOff.delete(d.srcToggle) : srcOff.add(d.srcToggle); saveSrc(); render(); return; }
-  if (d.srcFav) { srcFav = srcFav.includes(d.srcFav) ? srcFav.filter((x) => x !== d.srcFav) : [...srcFav, d.srcFav]; saveSrc(); render(); return; }
   if (d.srcAll) { if (d.srcAll === 'on') srcOff.clear(); else state.items.forEach((it) => srcOff.add(it.source)); saveSrc(); render(); return; }
   if (d.sec) go({ section: d.sec, category: null });
   else if (d.cat) go({ category: d.cat });
@@ -1025,6 +1089,55 @@ document.addEventListener('click', (e) => {
   else if (d.theme) { state.theme = d.theme; document.documentElement.dataset.theme = d.theme; savePrefs(); render(); return; }
   else return;
   if (inDrawer) setMenu(false);
+});
+
+// ---------- Aviser: dra i håndtaket for å endre rekkefølgen (mus, finger eller piltaster) ----------
+const srcUl = $('menuSources');
+function dragTo(y) {   // flytt naboene forbi den dratte raden – selve raden røres ikke, så grepet slipper aldri
+  const li = drag.li;
+  for (let n = 0; n < 60; n++) {
+    const prev = li.previousElementSibling, next = li.nextElementSibling;
+    if (prev && y < prev.getBoundingClientRect().top + prev.offsetHeight / 2) srcUl.insertBefore(prev, li.nextSibling);
+    else if (next && y > next.getBoundingClientRect().top + next.offsetHeight / 2) srcUl.insertBefore(next, li);
+    else break;
+  }
+}
+function dragTick() {   // rull menyen når raden dras mot øvre eller nedre kant – fortere jo nærmere kanten
+  if (!drag) return;
+  const box = $('drawer').getBoundingClientRect(), edge = 56;
+  const over = Math.max(box.top + edge - drag.y, 0) || -Math.max(drag.y - (box.bottom - edge), 0);   // > 0: mot toppen, < 0: mot bunnen
+  if (over && Math.abs(drag.y - drag.y0) > 8) { $('drawer').scrollTop -= Math.sign(over) * Math.min(Math.abs(over) / edge, 1) * 14; dragTo(drag.y); }
+  drag.raf = requestAnimationFrame(dragTick);
+}
+function saveOrder() {
+  const shown = [...srcUl.children].map((li) => li.dataset.src);
+  srcOrder = [...shown, ...srcOrder.filter((s) => !shown.includes(s))];   // aviser som ikke har saker akkurat nå, beholder plassen bakerst
+  saveSrc();
+}
+srcUl.addEventListener('pointerdown', (e) => {
+  const g = e.target.closest('[data-grip]'); if (!g || drag) return;
+  e.preventDefault();
+  drag = { li: g.closest('li'), id: e.pointerId, y: e.clientY, y0: e.clientY };
+  try { g.setPointerCapture(e.pointerId); } catch {}
+  drag.li.classList.add('dragging'); document.body.classList.add('sorting');
+  drag.raf = requestAnimationFrame(dragTick);
+});
+srcUl.addEventListener('pointermove', (e) => { if (drag && e.pointerId === drag.id) { drag.y = e.clientY; dragTo(e.clientY); } });
+function dragEnd(e) {
+  if (!drag || e.pointerId !== drag.id) return;
+  cancelAnimationFrame(drag.raf); drag.li.classList.remove('dragging'); document.body.classList.remove('sorting');
+  drag = null; saveOrder(); render();
+}
+srcUl.addEventListener('pointerup', dragEnd);
+srcUl.addEventListener('pointercancel', dragEnd);
+srcUl.addEventListener('keydown', (e) => {
+  const g = e.target.closest('[data-grip]'); if (!g || !['ArrowUp', 'ArrowDown'].includes(e.key)) return;
+  e.preventDefault();
+  const li = g.closest('li'), up = e.key === 'ArrowUp', other = up ? li.previousElementSibling : li.nextElementSibling;
+  if (!other) return;
+  srcUl.insertBefore(up ? li : other, up ? other : li);
+  const name = li.dataset.src; saveOrder(); render();
+  [...srcUl.children].find((x) => x.dataset.src === name)?.querySelector('[data-grip]').focus();
 });
 document.addEventListener('visibilitychange', () => { if (!document.hidden && !state.demo && Date.now() - loadedAt > REFRESH_MIN * 60e3) load(true); });
 
@@ -1073,10 +1186,13 @@ DEMO_LIST.push(
   { kicker: 'Hokksund:', title_no: 'Frivillige åpnet gratis leksehjelp på biblioteket', summary_no: 'Over 30 elever kom første kveld.', score: 8, tone: 'konstruktiv', category: 'Samfunn', region: 'lokalt', area: 'ovre-eiker', published_at: h(5.5), glad_count: 18 },
 );
 const DEMO_SRC_AREA = { lier: 'Lierposten', kongsberg: 'Kongsberg Dagblad', 'ovre-eiker': 'Eikerbladet' };
+// Oppdiktede pluss-aviser, så merkingen også vises i eksempelsakene
+const DEMO_PLUS = new Set(['Buskerud Blad', 'Vestviken Tidende', 'Kystavisa', 'Lierposten']);
 const DEMO_BASE = DEMO_LIST.map((d, i) => ({ id: `demo${i}`, url: '#', ...d,
   area: d.area || (d.region === 'lokalt' ? 'drammen' : null),
-  source: DEMO_SRC_AREA[d.area] || DEMO_SRC[d.category === 'Idrett' && d.region !== 'lokalt' ? 'idrett' : d.region] }));
-const also = (i, ...names) => names.map((n) => ({ ...DEMO_BASE[i], id: `${DEMO_BASE[i].id}-${n}`, story_id: DEMO_BASE[i].id, source: n, glad_count: 0 }));
+  source: DEMO_SRC_AREA[d.area] || DEMO_SRC[d.category === 'Idrett' && d.region !== 'lokalt' ? 'idrett' : d.region],
+  paywall: DEMO_PLUS.has(DEMO_SRC_AREA[d.area]) }));
+const also = (i, ...names) => names.map((n) => ({ ...DEMO_BASE[i], id: `${DEMO_BASE[i].id}-${n}`, story_id: DEMO_BASE[i].id, source: n, glad_count: 0, paywall: DEMO_PLUS.has(n) }));
 const DEMO = [...DEMO_BASE, ...also(0, 'Buskerud Blad', 'Riksnytt', 'Ekko Drammen', 'Vestviken Tidende'), ...also(4, 'Riksnytt', 'Kystavisa', 'Havbladet', 'Nordlys Nett'), ...also(1, 'Buskerud Blad'),
   ...also(13, 'Buskerud Blad', 'Sportsbladet'), ...also(16, 'Riksnytt', 'Verdensposten')];
 
