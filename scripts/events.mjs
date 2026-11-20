@@ -40,18 +40,19 @@ export function parseTripPage(html) {
   let name = meta('og:title') || html.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1] || '';
   name = decode(name).replace(/\s*[|–-]\s*UT\.no\s*$/i, '').trim();
   const text = decode(html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ');
-  const grade = text.match(/\b(Enkel|Middels|Krevende|Ekspert)\s+(fottur|skitur|padletur|sykkeltur|turløype|klatretur|bretur)/i);
+  // ut.no skriver «Enkel fottur», «Middels krevende fottur» og «Krevende fottur». «Middels krevende» er graden middels.
+  const grade = text.match(/\b(Enkel|Middels(?:\s+krevende)?|Krevende|Ekspert)\s+(fottur|skitur|padletur|sykkeltur|turløype|klatretur|bretur)/i);
   const season = text.match(/Sesong:\s*([A-Za-zæøå]{3})[a-zæøå]*\.?\s*[-–]\s*([A-Za-zæøå]{3})/i);
   const km = text.match(/\b(\d+(?:[.,]\d+)?)\s*km\b/);
-  const hours = text.match(/\b(\d+(?:[.,]\d+)?)\s*(?:t|timer)\b(?!\w)/);
+  const hours = text.match(/\b(\d+(?:[.,]\d+)?)\s*(?:t|timer)\b(?!\w)(?:\s*(\d{1,2})\s*min\b)?/);   // «2 t», «1 t 30 min», «1,5 timer»
   return {
     name,
-    difficulty: grade?.[1]?.toLowerCase() || null,
+    difficulty: grade?.[1]?.toLowerCase().split(/\s+/)[0] || null,
     activity: grade?.[2]?.toLowerCase() || null,
     season_from: season ? MONTHS[season[1].toLowerCase()] || null : null,
     season_to: season ? MONTHS[season[2].toLowerCase()] || null : null,
     distance_km: km ? Number(km[1].replace(',', '.')) : null,
-    duration_h: hours ? Number(hours[1].replace(',', '.')) : null,
+    duration_h: hours ? Math.round((Number(hours[1].replace(',', '.')) + Number(hours[2] || 0) / 60) * 100) / 100 : null,
   };
 }
 
