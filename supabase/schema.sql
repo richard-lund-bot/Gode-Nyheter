@@ -22,6 +22,11 @@ alter table public.articles add column if not exists must_see     boolean not nu
 alter table public.articles add column if not exists pinned_until timestamptz;                       -- satt av jobben eller manuelt
 create index if not exists articles_pinned_idx on public.articles (pinned_until);
 
+-- v1.7: oppslag på artikkelsiden – avisas egen adresse, pluss-merking og når vi sist sjekket
+alter table public.articles add column if not exists direct_url  text;         -- avisas egen adresse når feeden bare gir en Google Nyheter-lenke
+alter table public.articles add column if not exists paywall     boolean;      -- true = pluss-sak, false = åpen, null = ukjent
+alter table public.articles add column if not exists enriched_at timestamptz;  -- sist artikkelsiden ble slått opp (null = ikke ennå)
+
 -- v1.4: hvilket område en lokalsak gjelder (id fra regions.json)
 alter table public.articles add column if not exists area text;
 create index if not exists articles_area_idx on public.articles (area);

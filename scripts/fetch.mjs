@@ -8,6 +8,7 @@ import { createClient } from '@supabase/supabase-js';
 import { readFile } from 'node:fs/promises';
 import { updateWeather } from './weather.mjs';
 import { discoverSpots, verifySpots, planEvents } from './events.mjs';
+import { makeEnricher } from './enrich.mjs';
 
 // ---------- Innstillinger ----------
 const MAX_PER_RUN   = Number(process.env.MAX_PER_RUN || 120); // kostnadstak per kjøring
@@ -46,8 +47,9 @@ const parser = new Parser({
     ],
   },
 });
-const MAX_OG_LOOKUPS = 40; // maks antall artikkelsider vi slår opp bilde fra per kjøring
-let ogLookups = 0;
+const MAX_LOOKUPS = Number(process.env.MAX_LOOKUPS || 60);   // maks antall artikkelsider vi åpner per kjøring (bilde, pluss, egentlig lenke)
+const SHOW_MIN_SCORE = 6;                                    // saker under dette vises aldri, så dem slår vi ikke opp
+const enricher = makeEnricher({ maxLookups: MAX_LOOKUPS });
 
 const db = DRY_RUN ? null : createClient(
   requireEnv('SUPABASE_URL'), requireEnv('SUPABASE_SERVICE_KEY'),
@@ -93,34 +95,6 @@ function pickImage(it) {
   if (img) push(img[1], 1);
   cands.sort((a, b) => b.w - a.w);
   return cands[0]?.url || null;
-}
-
-async function fetchOgImage(pageUrl) {
-  try {
-    const res = await fetch(pageUrl, {
-      redirect: 'follow',
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; GodeNyheter/0.2; link preview)' },
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!res.ok) return null;
-    const html = (await res.text()).slice(0, 300000);
-    const m = html.match(/<meta[^>]+(?:property|name)=["'](?:og:image|twitter:image)["'][^>]*content=["']([^"']+)["']/i)
-           || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]*(?:property|name)=["'](?:og:image|twitter:image)["']/i);
-    if (!m) return null;
-    const abs = new URL(m[1].replace(/&amp;/g, '&'), res.url).toString();
-    return isHttps(abs) ? abs : null;
-  } catch { return null; }
-}
-
-// Fyll inn bilde fra artikkelsiden (og:image) for gode saker som mangler bilde i feeden
-async function enrichImages(rows) {
-  const todo = rows.filter((r) => !r.image_url && r.score >= 7 && !r._aggregator);
-  for (const r of todo) {
-    if (ogLookups >= MAX_OG_LOOKUPS) break;
-    ogLookups++;
-    r.image_url = await fetchOgImage(r.url);
-  }
-  rows.forEach((r) => delete r._aggregator);
 }
 
 // ---------- 1. Hent feeder ----------
@@ -274,7 +248,6 @@ async function classifyBatch(batch, leads) {
       kicker: String(r.kicker || '').slice(0, 30),
       title_no: String(r.title_no || it.title).slice(0, 300),
       image_url: it.image,
-      _aggregator: it.aggregator,
       summary_no: String(r.summary_no || '').slice(0, 400),
       score: Math.max(0, Math.min(10, Math.round(Number(r.score) || 0))),
       tone: r.tone,
@@ -351,7 +324,12 @@ for (let i = 0; i < fresh.length; i += BATCH_SIZE) {
   const batch = fresh.slice(i, i + BATCH_SIZE);
   try {
     const rows = await classifyBatch(batch, leads);
-    await enrichImages(rows);
+    // Åpne artikkelsiden for saker som skal vises: egentlig lenke bak Google Nyheter, bilde og pluss-merking
+    for (const r of rows) {
+      if (r.score < SHOW_MIN_SCORE) continue;
+      const extra = await enricher.enrich(r);
+      if (extra) Object.assign(r, extra);
+    }
     for (const r of rows) if (r._same_as) { r.story_id = r._same_as; clustered++; }
     const insertRows = rows.map(({ _i, _same_as, _same_as_i, ...rest }) => rest);
     const { data: ins, error } = await db.from('articles')
@@ -389,6 +367,21 @@ try {
     if (top?.[0]?.glad_count >= GLAD_PIN) await pin(top[0].id, `${top[0].glad_count} «Gledet meg»`);
   }
 } catch (e) { console.warn(`Solskinnssak: ${e.message}`); }
+
+// Etterfyll: synlige saker fra de siste døgnene som ikke er slått opp ennå (eldre saker, eller når taket ble nådd sist)
+try {
+  const { data: todo, error } = await db.from('articles').select('id, url, direct_url, image_url, paywall')
+    .gte('score', SHOW_MIN_SCORE).is('enriched_at', null).gte('created_at', new Date(Date.now() - 3 * 864e5).toISOString())
+    .order('score', { ascending: false }).order('created_at', { ascending: false }).limit(300);
+  if (error) throw error;
+  for (const r of todo) {
+    const extra = await enricher.enrich(r);
+    if (!extra) continue;
+    const { error: uErr } = await db.from('articles').update(extra).eq('id', r.id);
+    if (uErr) console.warn(`Etterfylling ${r.id}: ${uErr.message}`);
+  }
+} catch (e) { console.warn(`Etterfylling: ${e.message}`); }
+console.log(enricher.summary());
 
 const { error: delErr } = await db.from('articles')
   .delete().lt('created_at', new Date(Date.now() - KEEP_DAYS * 864e5).toISOString());
