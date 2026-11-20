@@ -353,6 +353,10 @@ const SUPABASE_URL = 'https://ggaqbsetmoxijdphbvui.supabase.co';
 // «Publishable»-nøkkelen (sb_publishable_…). Den er laget for å ligge åpent i nettsiden – RLS i databasen styrer hva den får lese.
 const SUPABASE_ANON_KEY = 'sb_publishable_VKUYFuKaKPuQLvMhtL-_wg_uC775QdR';
 const REFRESH_MIN = 5;            // hent nye saker når du kommer tilbake til siden, men ikke oftere enn dette
+// Idrett på forsiden: bare lokale saker (ditt område eller nabolaget) og saker med minst denne scoren …
+const SPORT_FRONT_MIN = 8;
+// … og høyst som hver n-te sak. Alt annet av idrett vises bare i seksjonen Idrett.
+const SPORT_FRONT_EVERY = 6;
 const SHOW_SOURCE_IMAGES = true;  // false = bare egne illustrasjoner (se README om bilderettigheter)
 // Områder (hentes fra regions.json, samme fil som innsamlingsjobben bruker; dette er reserve)
 let REGIONS = [{ id: 'drammen', name: 'Drammen', lat: 59.744, lon: 10.204 }];
@@ -559,6 +563,16 @@ const bonusHours = (it) => (BONUS_H.near[nearTier(it)] ?? 0) + (it.score >= 9 ? 
 const tkey = (it) => new Date(it.published_at).getTime() + bonusHours(it) * 3600e3;
 const isPinned = (it) => it.pinned_until && new Date(it.pinned_until) > new Date();
 const visible = () => base().sort((a, b) => tkey(b) - tkey(a));
+// Forsiden: tynn ut idretten (se SPORT_FRONT_MIN og SPORT_FRONT_EVERY øverst). Listen må være sortert slik den vises.
+function thinSport(items) {
+  let since = SPORT_FRONT_EVERY;   // antall andre saker siden forrige idrettssak
+  return items.filter((it) => {
+    if (it.category !== 'Idrett' || isPinned(it)) { since++; return true; }
+    const keep = (it.score >= SPORT_FRONT_MIN || (nearTier(it) ?? 9) <= 1) && since >= SPORT_FRONT_EVERY - 1;
+    if (keep) since = 0;
+    return keep;
+  });
+}
 // Toppsak: den beste saken nær deg siste døgn (rank har kvalitet + nærhet), resten er tidslinje
 function frontOrder(items) {
   const pinned = items.filter(isPinned).sort((a, b) => new Date(b.pinned_until) - new Date(a.pinned_until))[0] || null;
@@ -886,16 +900,17 @@ function layout(items, isFront) {
 
 // ---------- Visning ----------
 function render() {
-  const items = visible();
   const isFront = state.section === 'forsiden' && !state.category;
+  const items = isFront ? thinSport(visible()) : visible();
 
   const groups = grouped();
   const catsPresent = CATS.filter((c) => groups.some((it) => it.category === c && it.score >= state.minScore));
 
   // Sidemeny
   const count = (f) => groups.filter((it) => it.score >= state.minScore && f(it)).length;
+  const frontCount = thinSport(groups.filter((it) => it.score >= state.minScore).sort((a, b) => tkey(b) - tkey(a))).length;
   $('menuSections').innerHTML = SECTIONS.map((s) => `<li><button data-sec="${s.id}" aria-current="${!state.category && s.id === state.section}">${s.label}
-      <span class="count">${count((it) => inSection(it, s.id))}</span></button></li>`).join('');
+      <span class="count">${s.id === 'forsiden' ? frontCount : count((it) => inSection(it, s.id))}</span></button></li>`).join('');
   $('menuCats').innerHTML = catsPresent.map((c) => `<li><button data-cat="${esc(c)}" aria-current="${state.category === c}">${esc(c)}
       <span class="count">${count((it) => it.category === c)}</span></button></li>`).join('');
   $('segStrict').innerHTML = STRICT.map((s) => `<button data-strict="${s.v}" aria-pressed="${s.v === state.minScore}">${s.label}</button>`).join('');
