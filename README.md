@@ -57,6 +57,14 @@ Uten nøkler viser `index.html` eksempelsaker, slik at du kan jobbe med designet
 - Nye kilder: NRK Sport siste, BBC Sport og Google Nyheter-søk på Strømsgodset og Drammen-idrett.
 - Prompten slipper gjennom seire, rekorder, fair play, breddeidrett og mestring (7–9), men holder tap, skader, skandaler og overgangsrykter nede (maks 5).
 
+## Idrett på forsiden (v1.6)
+
+- Forsiden viser bare **gode norske og lokale bragder**: lokal idrett med score 7 eller høyere (ikke fra områder langt unna deg) og norsk idrett med score 8 eller høyere. Internasjonal idrett vises ikke på forsiden.
+- Høyst hver sjette sak på forsiden er idrett.
+- Alt av idrett ligger fortsatt i seksjonen **Idrett**.
+- Juster i `SPORT_FRONT` og `SPORT_FRONT_EVERY` øverst i `index.html`.
+- Claude setter region «norge» for norske utøvere og lag også når saken kommer fra en utenlandsk kilde.
+
 ## Samme sak fra flere kilder + valg av kilder (v0.8)
 
 - **Klynging:** Claude får med titlene på sakene fra siste 48 timer og sier om en ny sak gjelder *samme konkrete hendelse* (`same_as` / `same_as_i`). Slike saker får `story_id` = id-en til saken som leder historien. Nettsiden slår dem sammen til ett kort.
@@ -69,7 +77,7 @@ Uten nøkler viser `index.html` eksempelsaker, slik at du kan jobbe med designet
 ## Vær og turtips i lys- og værkortet (v1.0)
 
 - GitHub-jobben henter værvarsel fra **MET Norway** (Locationforecast 2.0) hver halvtime og lagrer en dagsoppsummering i tabellen `local_info`. Nettsiden kaller ikke MET direkte, fordi MET krever identifisering i User-Agent, og det kan ikke nettlesere sette.
-- **Påkrevd:** Legg inn repo-variabelen `MET_CONTACT` (Settings → Secrets and variables → Actions → **Variables**), f.eks. e-postadressen din eller nettsidens adresse. Uten den hoppes været over.
+- **Påkrevd:** Legg inn `MET_CONTACT` (Settings → Secrets and variables → Actions), f.eks. e-postadressen din eller nettsidens adresse. Den kan ligge under **Variables** eller **Secrets**; jobben leser begge. Uten den hoppes været over.
 - Valgfritt: `HOME_LAT` / `HOME_LON` for et annet sted (standard er Drammen). Husk også `HOME` i `index.html`.
 - **Værtyper:** Hver dag klassifiseres som sol, oppholdsvær, klart og kaldt, varme, snø, regn, vind eller tåke (`kindOf()`).
 - **Valg av dag:** fin helgedag > fin ukedag > første dag. Har nærmeste dag dårlig vær mens den fremhevede dagen er en annen, vises en ekstra linje med inne-tips for den dagen.
