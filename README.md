@@ -57,6 +57,16 @@ Uten nøkler viser `index.html` eksempelsaker, slik at du kan jobbe med designet
 - Nye kilder: NRK Sport siste, BBC Sport og Google Nyheter-søk på Strømsgodset og Drammen-idrett.
 - Prompten slipper gjennom seire, rekorder, fair play, breddeidrett og mestring (7–9), men holder tap, skader, skandaler og overgangsrykter nede (maks 5).
 
+## Databasen starter jobben (v1.8)
+
+GitHubs egen tidsplan viste seg upålitelig: jobben ble startet én gang på elleve timer, selv om den er satt til hver halvtime. Derfor ber databasen GitHub om å kjøre «Hent gode nyheter» kl. :22 og :52 hver time. GitHubs tidsplan (:07 og :37) står som reserve.
+
+- **Oppsett:** `pg_cron` kjører `private.start_news_job()`, som sender en forespørsel til GitHubs API med `pg_net`. Se nederst i `schema.sql`.
+- **Nøkkel:** en fine-grained GitHub-nøkkel med tilgang til bare dette repoet og rettigheten *Actions: Read and write*. Den ligger kryptert i Supabase Vault under navnet `github_dispatch_token`. Slike nøkler varer høyst ett år og må da byttes i Vault.
+- **Uten nøkkel** gjør jobben ingenting, og siden oppdateres bare når GitHub selv starter jobben.
+- **Sjekk at det virker:** `select * from cron.job_run_details order by start_time desc limit 5;` viser når databasen prøvde, og `select status_code, created from net._http_response order by created desc limit 5;` viser svaret fra GitHub (204 betyr at jobben ble startet, 401 at nøkkelen er feil eller utløpt).
+- **Skru av:** `select cron.unschedule('gode-nyheter-hent');`
+
 ## Bilder, pluss-saker og avisrekkefølge (v1.7)
 
 **Bilder og egentlig lenke.** Google Nyheter gir bare en omvei-lenke uten bilde. For saker som skal vises (score 6 eller høyere) finner jobben avisas egen adresse bak lenken, åpner artikkelsiden og henter bildet (`og:image`). Nettsiden lenker rett til avisa. Høyst `MAX_LOOKUPS` sider (standard 60) åpnes per kjøring; resten tas i neste kjøring. Svarer ikke Google, lagres saken uten bilde og prøves igjen senere.
