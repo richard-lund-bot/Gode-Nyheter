@@ -26,6 +26,7 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           MAX_PER_RUN: '120'
-          MET_CONTACT: ${{ vars.MET_CONTACT }}   # e-post eller nettside – påkrevd av MET Norway
+          # e-post eller nettside – påkrevd av MET Norway. Leses fra Variables, eller fra Secrets hvis den ligger der.
+          MET_CONTACT: ${{ vars.MET_CONTACT || secrets.MET_CONTACT }}
           GLAD_PIN: ${{ vars.GLAD_PIN }}         # valgfritt, standard 150
           PIN_HOURS: ${{ vars.PIN_HOURS }}       # valgfritt, standard 12

@@ -77,7 +77,7 @@ Uten nøkler viser `index.html` eksempelsaker, slik at du kan jobbe med designet
 ## Vær og turtips i lys- og værkortet (v1.0)
 
 - GitHub-jobben henter værvarsel fra **MET Norway** (Locationforecast 2.0) hver halvtime og lagrer en dagsoppsummering i tabellen `local_info`. Nettsiden kaller ikke MET direkte, fordi MET krever identifisering i User-Agent, og det kan ikke nettlesere sette.
-- **Påkrevd:** Legg inn repo-variabelen `MET_CONTACT` (Settings → Secrets and variables → Actions → **Variables**), f.eks. e-postadressen din eller nettsidens adresse. Uten den hoppes været over.
+- **Påkrevd:** Legg inn `MET_CONTACT` (Settings → Secrets and variables → Actions), f.eks. e-postadressen din eller nettsidens adresse. Den kan ligge under **Variables** eller **Secrets**; jobben leser begge. Uten den hoppes været over.
 - Valgfritt: `HOME_LAT` / `HOME_LON` for et annet sted (standard er Drammen). Husk også `HOME` i `index.html`.
 - **Værtyper:** Hver dag klassifiseres som sol, oppholdsvær, klart og kaldt, varme, snø, regn, vind eller tåke (`kindOf()`).
 - **Valg av dag:** fin helgedag > fin ukedag > første dag. Har nærmeste dag dårlig vær mens den fremhevede dagen er en annen, vises en ekstra linje med inne-tips for den dagen.
