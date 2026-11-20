@@ -224,6 +224,7 @@ For hver sak, gi:
 - tone: "positiv" | "konstruktiv" | "nøytral" | "negativ"
 - category: én av ${CATEGORIES.map((c) => `"${c}"`).join(', ')}
 - region: "lokalt", "norge" eller "verden". Bruk hintet, men overstyr hvis innholdet tydelig sier noe annet.
+  Idrett: norske utøvere og lag er "norge" også når de konkurrerer i utlandet eller saken kommer fra en utenlandsk kilde.
 - area: hvis saken handler om et sted i ett av disse lokale områdene, oppgi id-en, ellers null:
   ${REGIONS.map((r) => `"${r.id}" (${r.name})`).join(', ')}.
   Bruk område_hint som utgangspunkt, men velg ut fra hvor saken faktisk skjer (et søk på «Lier» kan gi en sak fra Drammen).

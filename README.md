@@ -57,6 +57,14 @@ Uten nøkler viser `index.html` eksempelsaker, slik at du kan jobbe med designet
 - Nye kilder: NRK Sport siste, BBC Sport og Google Nyheter-søk på Strømsgodset og Drammen-idrett.
 - Prompten slipper gjennom seire, rekorder, fair play, breddeidrett og mestring (7–9), men holder tap, skader, skandaler og overgangsrykter nede (maks 5).
 
+## Idrett på forsiden (v1.6)
+
+- Forsiden viser bare **gode norske og lokale bragder**: lokal idrett med score 7 eller høyere (ikke fra områder langt unna deg) og norsk idrett med score 8 eller høyere. Internasjonal idrett vises ikke på forsiden.
+- Høyst hver sjette sak på forsiden er idrett.
+- Alt av idrett ligger fortsatt i seksjonen **Idrett**.
+- Juster i `SPORT_FRONT` og `SPORT_FRONT_EVERY` øverst i `index.html`.
+- Claude setter region «norge» for norske utøvere og lag også når saken kommer fra en utenlandsk kilde.
+
 ## Samme sak fra flere kilder + valg av kilder (v0.8)
 
 - **Klynging:** Claude får med titlene på sakene fra siste 48 timer og sier om en ny sak gjelder *samme konkrete hendelse* (`same_as` / `same_as_i`). Slike saker får `story_id` = id-en til saken som leder historien. Nettsiden slår dem sammen til ett kort.
