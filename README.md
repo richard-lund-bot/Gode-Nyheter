@@ -65,6 +65,7 @@ Uten nøkler viser `index.html` eksempelsaker, slik at du kan jobbe med designet
 - **Fanene** (Forsiden, Lokalt, Norge, Verden, Idrett) vises bare hvis de får plass i sin helhet mellom logoen og pott-knappen. På en vanlig telefon blir det ingen eller én, på PC alle. Resten ligger i menyen. `fitTabs()` i `index.html` styrer dette.
 - **Været** der leseren bor lenker til yr for akkurat det stedet. På PC står det i topplinjen. På mobil står det i en smal stripe under, bare på forsiden, sammen med «Bytt sted», som åpner menyen på «Mitt område».
 - **Stedet** leseren velger, huskes i nettleseren. Det er ingen innlogging.
+- **Posisjon krever https.** Nettlesere gir bare posisjon til sider som er åpnet med sikker tilkobling. Siden sender derfor leseren fra http til https av seg selv (øverst i `index.html`). I tillegg bør «Enforce HTTPS» være slått på i GitHub: Settings → Pages.
 - **Første besøk:** siden spør «Hvor bor du?» én gang per nettleser, med «Finn nærmeste» (telefonens posisjon), områdene som knapper og «Ikke nå». Svaret huskes (`gn-place-asked` i nettleserens lager), så spørsmålet ikke kommer igjen der. Det kommer på nytt i en annen nettleser, på en annen enhet, i privat modus eller når nettleserdata slettes. Den som allerede har valgt et annet område enn Drammen, blir ikke spurt.
 
 **Åpen kasse** (`#kasse`) viser alt som kommer inn og går ut, og hvem som får overskuddet. Den leser fire tabeller i databasen:

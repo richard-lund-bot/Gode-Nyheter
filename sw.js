@@ -1,5 +1,5 @@
 // Enkel service worker: appskallet caches, nyheter hentes alltid fra nettet.
-const CACHE = 'gode-nyheter-v5';
+const CACHE = 'gode-nyheter-v6';
 const SHELL = ['./', 'index.html', 'manifest.json', 'icon.svg', 'fonts/source-serif-4-latin-900.woff2'];
 
 self.addEventListener('install', (e) => {

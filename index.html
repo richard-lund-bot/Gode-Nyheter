@@ -2,6 +2,11 @@
 <html lang="nb" data-theme="light">
 <head>
 <meta charset="utf-8">
+<script>
+// Alltid sikker tilkobling: åpnes siden med http, sendes leseren rett til https.
+// Uten https nekter nettleseren å gi posisjon («Finn nærmeste»), og siden kan ikke legges til på hjemskjermen.
+if (location.protocol === 'http:' && /(^|\.)gn24\.no$|\.github\.io$/.test(location.hostname)) location.replace('https:' + location.href.slice(5));
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>GN24 – Gode nyheter</title>
 <meta name="description" content="Bare gode nyheter – lokalt, nasjonalt og fra verden.">
@@ -1435,6 +1440,7 @@ $('postForm').addEventListener('submit', async (e) => {
 let locating = null;
 function findPosition(say, alt) {
   if (locating) return locating;   // ett søk om gangen, også ved flere trykk
+  if (!window.isSecureContext) { say(`Posisjon virker bare når siden er åpnet med https. ${alt}`); return Promise.resolve(null); }
   if (!navigator.geolocation) { say(`Denne nettleseren kan ikke gi posisjon. ${alt}`); return Promise.resolve(null); }
   const why = { 1: 'Nettleseren får ikke bruke posisjonen din. Sjekk at stedstjenester er slått på for nettleseren i innstillingene på enheten.',
     2: 'Enheten fant ikke posisjonen akkurat nå.', 3: 'Det tok for lang tid å finne posisjonen.' };
