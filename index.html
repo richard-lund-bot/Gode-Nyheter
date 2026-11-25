@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>GN – Gode nyheter</title>
+<title>GN24 – Gode nyheter</title>
 <meta name="description" content="Bare gode nyheter – lokalt, nasjonalt og fra verden.">
 <meta name="theme-color" content="#2f5d43">
 <link rel="manifest" href="manifest.json">
@@ -43,10 +43,12 @@
   .logo { display: flex; align-items: center; color: inherit; text-decoration: none; cursor: pointer; }
   .gn { position: relative; display: inline-flex; align-items: center; color: #fff; padding-right: 10px; }
   .gn b { font: 900 2.05rem/1 "Arial Black", "Helvetica Neue", Arial, sans-serif; letter-spacing: -.07em; }
+  .gn i { font-style: normal; color: var(--m-sol); margin-left: .05em; }   /* «24» i solgult */
+  .top .gn i { color: var(--sun); }
   .gn svg { position: absolute; top: -5px; right: -4px; width: 16px; height: 16px; fill: currentColor; stroke: currentColor; }
   .drawer-head .gn { color: var(--brand); }
-  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .drawer-head .gn { color: var(--ink); } }
-  :root[data-theme="dark"] .drawer-head .gn { color: var(--ink); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .drawer-head .gn, :root:not([data-theme="light"]) footer .gn { color: var(--ink); } }
+  :root[data-theme="dark"] .drawer-head .gn, :root[data-theme="dark"] footer .gn { color: var(--ink); }
   .strip { background: var(--card); border-bottom: 1px solid var(--line); position: sticky; top: calc(54px + env(safe-area-inset-top)); z-index: 19; }
   .strip nav { max-width: 980px; margin: 0 auto; display: flex; gap: 2px; overflow-x: auto; padding: 0 8px; scrollbar-width: none; }
   .strip nav::-webkit-scrollbar { display: none; }
@@ -336,7 +338,7 @@
 
 <header class="top">
   <div class="bar">
-    <a class="logo" id="logoHome" href="#" aria-label="GN – Gode nyheter, til forsiden"><span class="gn" aria-hidden="true"><b>GN</b><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="3.6"/><g stroke-width="2" stroke-linecap="round"><path d="M10 2v2.5M10 15.5V18M2 10h2.5M15.5 10H18M4.3 4.3l1.8 1.8M13.9 13.9l1.8 1.8M4.3 15.7l1.8-1.8M13.9 6.1l1.8-1.8"/></g></svg></span></a>
+    <a class="logo" id="logoHome" href="#" aria-label="GN24 – Gode nyheter, til forsiden"><span class="gn" aria-hidden="true"><b>GN<i>24</i></b><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="3.6"/><g stroke-width="2" stroke-linecap="round"><path d="M10 2v2.5M10 15.5V18M2 10h2.5M15.5 10H18M4.3 4.3l1.8 1.8M13.9 13.9l1.8 1.8M4.3 15.7l1.8-1.8M13.9 6.1l1.8-1.8"/></g></svg></span></a>
     <button class="iconbtn" id="openMenu" aria-label="Åpne meny" aria-controls="drawer" aria-expanded="false">
       <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
     </button>
@@ -346,7 +348,7 @@
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer" aria-label="Meny" aria-hidden="true">
   <div class="drawer-head">
-    <div class="logo"><span class="gn" aria-hidden="true"><b>GN</b><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="3.6"/><g stroke-width="2" stroke-linecap="round"><path d="M10 2v2.5M10 15.5V18M2 10h2.5M15.5 10H18M4.3 4.3l1.8 1.8M13.9 13.9l1.8 1.8M4.3 15.7l1.8-1.8M13.9 6.1l1.8-1.8"/></g></svg></span></div>
+    <div class="logo"><span class="gn" aria-hidden="true"><b>GN<i>24</i></b><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="3.6"/><g stroke-width="2" stroke-linecap="round"><path d="M10 2v2.5M10 15.5V18M2 10h2.5M15.5 10H18M4.3 4.3l1.8 1.8M13.9 13.9l1.8 1.8M4.3 15.7l1.8-1.8M13.9 6.1l1.8-1.8"/></g></svg></span></div>
     <button class="iconbtn" id="closeMenu" aria-label="Lukk meny">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
     </button>
@@ -377,9 +379,9 @@
 <main class="page">
   <div class="feed" id="feed"><div class="loading">Laster …</div></div>
   <footer>
-    <div class="foot-brand"><span class="gn" aria-hidden="true"><b>GN</b><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="3.6"/><g stroke-width="2" stroke-linecap="round"><path d="M10 2v2.5M10 15.5V18M2 10h2.5M15.5 10H18M4.3 4.3l1.8 1.8M13.9 13.9l1.8 1.8M4.3 15.7l1.8-1.8M13.9 6.1l1.8-1.8"/></g></svg></span></div>
+    <div class="foot-brand"><span class="gn" aria-hidden="true"><b>GN<i>24</i></b><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="3.6"/><g stroke-width="2" stroke-linecap="round"><path d="M10 2v2.5M10 15.5V18M2 10h2.5M15.5 10H18M4.3 4.3l1.8 1.8M13.9 13.9l1.8 1.8M4.3 15.7l1.8-1.8M13.9 6.1l1.8-1.8"/></g></svg></span></div>
     Innhold og bilder tilhører kildene.<br>
-    © <span id="year"></span> GN – Gode nyheter
+    © <span id="year"></span> GN24 – Gode nyheter
   </footer>
 </main>
 
