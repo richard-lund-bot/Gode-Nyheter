@@ -5,6 +5,7 @@
 import Parser from 'rss-parser';
 import Anthropic from '@anthropic-ai/sdk';
 import { createClient } from '@supabase/supabase-js';
+import { meter, bookAiCost } from './kasse.mjs';
 import { readFile } from 'node:fs/promises';
 import { updateWeather } from './weather.mjs';
 import { discoverSpots, verifySpots, planEvents } from './events.mjs';
@@ -238,6 +239,7 @@ async function classifyBatch(batch, leads) {
     system: SYSTEM,
     messages: [{ role: 'user', content: JSON.stringify(payload) }],
   });
+  meter.add(MODEL, res.usage);
   const text = res.content.filter((b) => b.type === 'text').map((b) => b.text).join('');
   const json = text.slice(text.indexOf('['), text.lastIndexOf(']') + 1);
   const parsed = JSON.parse(json);
@@ -390,6 +392,9 @@ console.log(enricher.summary());
 const { error: delErr } = await db.from('articles')
   .delete().lt('created_at', new Date(Date.now() - KEEP_DAYS * 864e5).toISOString());
 if (delErr) console.warn(`Opprydding feilet: ${delErr.message}`);
+
+// Åpen kasse: før hva denne kjøringen kostet i AI-bruk
+try { await bookAiCost(db); } catch (e) { console.warn(`Åpen kasse: ${e.message}`); }
 
 console.log(`Lagret ${saved} (${good} gode, score ≥ 7, ${clustered} knyttet til samme sak fra andre kilder). Feilet: ${failed}.`);
 // Avslutt eksplisitt. En feed som svarer med feil (f.eks. 403) etterlater en åpen forbindelse, og uten dette

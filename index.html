@@ -47,13 +47,31 @@
   .gn svg { position: absolute; top: -5px; right: -4px; width: 16px; height: 16px; fill: currentColor; stroke: currentColor; }
   .drawer-head .gn { color: var(--brand); }
   :root[data-theme="dark"] .drawer-head .gn, :root[data-theme="dark"] footer .gn { color: var(--ink); }
-  .strip { background: var(--card); border-bottom: 1px solid var(--line); position: sticky; top: calc(54px + env(safe-area-inset-top)); z-index: 19; }
-  .strip nav { max-width: 980px; margin: 0 auto; display: flex; gap: 2px; overflow-x: auto; padding: 0 8px; scrollbar-width: none; }
-  .strip nav::-webkit-scrollbar { display: none; }
-  .strip button { flex: none; border: 0; background: none; padding: 12px 10px 9px; font: 700 .9rem var(--sans); color: var(--muted);
-                  border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap; }
-  .strip button[aria-current="true"] { color: var(--ink); border-color: var(--m-hjerte); }
-  .strip .sep { flex: none; width: 1px; background: var(--line); margin: 10px 4px; }
+  /* Pott-knappen: viser overskuddet som går til lokale lag, og fører til Åpen kasse */
+  .pot { margin-left: auto; margin-right: 2px; display: flex; align-items: center; gap: 7px; border: 0; background: var(--sun); color: #2e1f00;
+         border-radius: 999px; padding: 4px 13px 4px 5px; cursor: pointer; line-height: 1.05; text-align: left; font-family: var(--sans); }
+  .pot .ic { width: 26px; height: 26px; border-radius: 50%; background: #2e1f00; color: var(--sun); display: grid; place-items: center; flex: none; }
+  .pot .ic svg { width: 15px; height: 15px; }
+  .pot b { display: block; font: 900 1rem/1 var(--news); white-space: nowrap; }
+  .pot small { display: block; font: 700 .6rem/1.1 var(--sans); letter-spacing: .03em; text-transform: uppercase; opacity: .85; margin-top: 2px; white-space: nowrap; }
+  /* Faner under topplinjen. De glir opp bak topplinjen når man blar nedover, og kommer tilbake når man blar opp. */
+  .tabs { position: sticky; top: calc(58px + env(safe-area-inset-top)); z-index: 19; background: var(--brand); transition: transform .22s ease; }
+  body.tabs-up .tabs { transform: translateY(-105%); }
+  .tabs-in { max-width: 980px; margin: 0 auto; display: flex; overflow-x: auto; padding: 0 6px; scrollbar-width: none; }
+  .tabs-in::-webkit-scrollbar { display: none; }
+  .tabs-in::after { content: ""; position: sticky; right: -6px; flex: none; width: 30px; margin-left: -30px; background: linear-gradient(90deg, transparent, var(--brand)); pointer-events: none; }
+  .tabs button { flex: none; border: 0; background: none; padding: 9px 10px 8px; color: rgba(255,255,255,.8); font: 700 .95rem var(--sans);
+                 border-bottom: 3px solid transparent; white-space: nowrap; cursor: pointer; }
+  .tabs button:last-child { margin-right: 24px; }
+  .tabs button[aria-current="true"] { color: #fff; border-color: var(--sun); }
+  .tabs button.t-kasse { color: var(--sun); }
+  /* «I dag»-stripa: bare øverst på forsiden, følger ikke med nedover */
+  .today { background: var(--brand); }
+  .today div { background: rgba(0,0,0,.22); }
+  .today p { max-width: 980px; margin: 0 auto; padding: 7px 16px; display: flex; gap: 14px; align-items: center; font: 600 .8rem var(--sans);
+             white-space: nowrap; overflow: hidden; color: rgba(255,255,255,.92); }
+  .today b { color: #fff; }
+  .today .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--sun); box-shadow: 0 0 0 4px rgba(242,181,68,.25); margin: 0 9px 0 4px; vertical-align: 1px; }
 
   /* ---------- Sidemeny ---------- */
   .scrim { position: fixed; inset: 0; background: rgba(0,0,0,.45); opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 40; }
@@ -321,6 +339,55 @@
   .native .sponsor { display: flex; align-items: center; gap: 8px; font: 700 .72rem var(--sans); text-transform: uppercase; letter-spacing: .06em; color: #8a5cf6; }
   .native .sponsor i { width: 22px; height: 22px; border-radius: 6px; background: #8a5cf6; display: grid; place-items: center; color: #fff; font-style: normal; font-size: .8rem; }
 
+  /* ---------- Åpen kasse ---------- */
+  .kasse { grid-column: 1 / -1; max-width: 720px; width: 100%; margin: 0 auto; padding: 18px 16px 10px; }
+  .kasse .kick { font-size: 1.15rem; color: var(--brand); }
+  :root[data-theme="dark"] .kasse .kick { color: var(--m-lys); }
+  .kasse h1 { font: 900 2.5rem/1 var(--news); letter-spacing: -.012em; margin: 2px 0 10px; text-wrap: balance; }
+  .kasse .ing { font-size: 1.1rem; line-height: 1.4; margin: 0 0 18px; opacity: .9; }
+  .kasse h3 { font: 900 1.45rem/1.1 var(--news); margin: 28px 0 8px; }
+  .kasse .lead { margin: 0 0 10px; font-size: .95rem; color: var(--muted); line-height: 1.45; }
+  .k-sum { background: var(--brand); color: #fff; border-radius: 10px; padding: 16px 16px 18px; }
+  .k-sum small { display: block; font: 700 .72rem var(--sans); text-transform: uppercase; letter-spacing: .05em; opacity: .85; }
+  .k-sum .big { display: block; font: 900 3.2rem/1 var(--news); color: var(--sun); margin: 4px 0 2px; white-space: nowrap; }
+  .k-sum p { margin: 8px 0 0; font-size: .95rem; line-height: 1.4; opacity: .95; }
+  .k-tre { display: grid; grid-template-columns: repeat(3, auto); justify-content: space-between; gap: 10px; margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.2); }
+  .k-tre b { display: block; font: 900 clamp(.9rem, 4.2vw, 1.2rem)/1.2 var(--news); white-space: nowrap; }
+  .k-under { margin: 14px 0 6px; font: 700 .8rem var(--sans); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .k-liste { background: var(--card); border-radius: 10px; padding: 2px 14px; }
+  .k-liste > div { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 11px 0; border-bottom: 1px solid var(--line); }
+  .k-liste > div:last-child { border: 0; }
+  .k-liste b { font: 700 .98rem var(--sans); overflow-wrap: anywhere; }
+  .k-liste em { font: 900 1.05rem var(--news); font-style: normal; white-space: nowrap; text-align: right; }
+  .k-liste small { grid-column: 1 / -1; color: var(--muted); font-size: .8rem; line-height: 1.4; }
+  .k-liste small a { color: inherit; }
+  .k-liste .tag { display: inline-block; background: var(--well); color: var(--muted); font: 700 .64rem var(--sans); letter-spacing: .04em; text-transform: uppercase;
+                  border-radius: 4px; padding: 2px 5px; margin-left: 6px; vertical-align: 1px; white-space: nowrap; }
+  .k-tom { background: var(--card); border-radius: 10px; padding: 14px; color: var(--muted); font-size: .95rem; margin: 0; line-height: 1.45; }
+  .k-note { margin: 8px 2px 0; font-size: .82rem; color: var(--muted); line-height: 1.45; }
+  .k-eldre { background: var(--card); border-radius: 10px; margin-top: 8px; padding: 0 14px 4px; }
+  .k-eldre summary { padding: 12px 0; font: 700 .98rem var(--sans); cursor: pointer; }
+  .k-eldre .k-liste { padding: 0; }
+  .k-eldre .k-tom { padding: 0 0 10px; }
+  .k-form { background: var(--card); border-radius: 10px; padding: 14px; display: grid; gap: 10px; position: relative; }
+  .k-form label { display: grid; gap: 4px; font: 700 .85rem var(--sans); }
+  .k-form label small { font-weight: 400; font-size: inherit; color: var(--muted); }
+  .k-form input, .k-form select { padding: 11px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: 600 1rem var(--sans); min-width: 0; width: 100%; }
+  .k-form .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  .k-knapp { border: 0; background: var(--sun); color: #2e1f00; font: 800 1rem var(--sans); border-radius: 999px; padding: 13px; cursor: pointer; }
+  .k-knapp:disabled { opacity: .6; cursor: default; }
+  .k-msg { margin: 0; font-size: .92rem; font-weight: 600; line-height: 1.4; }
+  .k-msg:empty { display: none; }
+  .k-msg.err { color: var(--m-hjerte); }
+  .k-form .fine { margin: 0; font-size: .8rem; color: var(--muted); line-height: 1.45; }
+  .k-lag { list-style: none; margin: 0; padding: 2px 14px; background: var(--card); border-radius: 10px; }
+  .k-lag li { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); font: 700 .98rem var(--sans); }
+  .k-lag li:last-child { border: 0; }
+  .k-lag span { color: var(--muted); font-weight: 500; font-size: .85rem; white-space: nowrap; }
+  .k-regler { margin: 0; padding-left: 1.2em; font-size: .95rem; line-height: 1.5; }
+  .k-regler li { margin-bottom: 5px; }
+  .k-fra { margin: 18px 0 0; font-size: .8rem; color: var(--muted); }
+
   .chipline { padding: 0 14px; }
   .clear { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 5px 11px; font-size: .8rem; cursor: pointer; }
   .empty, .loading { text-align: center; color: var(--muted); padding: 60px 12px; }
@@ -345,6 +412,10 @@
     .pair .t { font-size: 1.7rem; }
     .overlay .ph { aspect-ratio: 16 / 9; }
     .mix, .card { border-radius: 6px; }
+    .tabs button { font-size: 1.02rem; padding: 10px 14px 9px; }
+    .tabs-in::after { display: none; }
+    .pot b { font-size: 1.12rem; }
+    .kasse h1 { font-size: 3.2rem; }
   }
 </style>
 </head>
@@ -353,11 +424,14 @@
 <header class="top">
   <div class="bar">
     <a class="logo" id="logoHome" href="#" aria-label="GN24 – Gode nyheter, til forsiden"><span class="gn" aria-hidden="true"><b>GN<i>24</i></b><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="3.6"/><g stroke-width="2" stroke-linecap="round"><path d="M10 2v2.5M10 15.5V18M2 10h2.5M15.5 10H18M4.3 4.3l1.8 1.8M13.9 13.9l1.8 1.8M4.3 15.7l1.8-1.8M13.9 6.1l1.8-1.8"/></g></svg></span></a>
+    <button class="pot" id="potPill" data-sec="kasse" aria-label="Åpen kasse"></button>
     <button class="iconbtn" id="openMenu" aria-label="Åpne meny" aria-controls="drawer" aria-expanded="false">
       <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
     </button>
   </div>
 </header>
+<nav class="tabs" aria-label="Seksjoner"><div class="tabs-in" id="tabsIn"></div></nav>
+<div class="today" id="today" hidden></div>
 
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer" aria-label="Meny" aria-hidden="true">
@@ -404,6 +478,11 @@
 const SUPABASE_URL = 'https://ggaqbsetmoxijdphbvui.supabase.co';
 // «Publishable»-nøkkelen (sb_publishable_…). Den er laget for å ligge åpent i nettsiden – RLS i databasen styrer hva den får lese.
 const SUPABASE_ANON_KEY = 'sb_publishable_VKUYFuKaKPuQLvMhtL-_wg_uC775QdR';
+// Åpen kasse – reglene som står på siden. Trekningen i databasen (private.run_monthly_draw) har samme minstegrense.
+const KASSE_MIN_POT = 500;        // kr: er potten mindre, går den videre til neste måned
+const KASSE_PAUSE_MND = 12;       // et lag som har vunnet, står over så mange måneder
+// Det som er gratis, står ikke i regnskapet. Denne setningen forklarer hvorfor (tom tekst = vises ikke).
+const KASSE_GRATIS = 'Database og nettsted koster ingenting ennå. Begge ligger på gratisnivå hos Supabase og GitHub.';
 const REFRESH_MIN = 5;            // hent nye saker når du kommer tilbake til siden, men ikke oftere enn dette
 // Idrett på forsiden: hovedvekt på gode norske og lokale bragder. Tallet er laveste score som slipper gjennom,
 // null betyr at idrett fra den regionen aldri vises på forsiden. Alt av idrett ligger i seksjonen Idrett.
@@ -487,16 +566,18 @@ const THEMES = [{ v: 'light', label: 'Lyst' }, { v: 'dark', label: 'Mørkt' }]; 
 const REGION_LABEL = { lokalt: 'Lokalt', norge: 'Norge', verden: 'Verden' };
 
 // ---------- Tilstand ----------
-const state = { section: 'forsiden', category: null, region: 'drammen', events: [], minScore: 7, theme: 'light', items: [], demo: false };
+const state = { section: 'forsiden', category: null, region: 'drammen', events: [], minScore: 7, theme: 'light', items: [], demo: false,
+  kasse: { rows: null, clubs: null, draws: null, failed: false } };   // Åpen kasse: regnskapslinjer, påmeldte lag og trekninger
 const store = {
   get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
 };
 Object.assign(state, store.get('gn-prefs', {}), { category: null });
+state.section = location.hash === '#kasse' ? 'kasse' : state.section === 'kasse' ? 'forsiden' : state.section;   // Åpen kasse har egen adresse (#kasse)
 if (!THEMES.some((t) => t.v === state.theme)) state.theme = 'light';   // eldre besøk kan ha lagret «auto»
 document.documentElement.dataset.theme = state.theme;
 const gladSet = new Set(store.get('gn-glad', []));
-const savePrefs = () => store.set('gn-prefs', { section: state.section, minScore: state.minScore, theme: state.theme, region: state.region });
+const savePrefs = () => store.set('gn-prefs', { section: state.section === 'kasse' ? 'forsiden' : state.section, minScore: state.minScore, theme: state.theme, region: state.region });
 
 
 const $ = (id) => document.getElementById(id);
@@ -554,8 +635,9 @@ let loadedAt = 0;
 // refresh = true: hent på nytt i bakgrunnen og behold det som står på skjermen til de nye sakene er klare
 async function load(refresh = false) {
   if (!refresh) $('feed').innerHTML = '<div class="loading">Laster …</div>';
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) { state.demo = true; state.items = DEMO; await loadLocal(); return render(); }
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) { state.demo = true; state.items = DEMO; await Promise.all([loadLocal(), loadLedger()]); return render(); }
   const local = loadLocal();
+  loadLedger().then(() => { renderTop(); if (state.section === 'kasse') renderKasse(); });   // venter ikke på regnskapet før sakene vises
   try {
     const url = `${SUPABASE_URL}/rest/v1/articles?select=id,story_id,url,direct_url,paywall,source,source_domain,area,pinned_until,kicker,title_no,summary_no,image_url,score,tone,category,region,published_at,glad_count`
       + `&score=gte.6&order=published_at.desc&limit=300`;
@@ -564,8 +646,30 @@ async function load(refresh = false) {
     state.items = await res.json(); state.demo = false; loadedAt = Date.now();
     await local; render();
   } catch {
-    if (!refresh) $('feed').innerHTML = '<div class="empty">Fikk ikke lastet saker.</div>';
+    if (state.section === 'kasse') render();   // Åpen kasse trenger ikke sakene
+    else if (!refresh) $('feed').innerHTML = '<div class="empty">Fikk ikke lastet saker.</div>';
   }
+}
+
+// ---------- Åpen kasse: henting ----------
+const sbGet = (path) => fetch(`${SUPABASE_URL}/rest/v1/${path}`, { headers: sbHeaders() }).then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); });
+// Regnskapet hentes ved oppstart, fordi pott-knappen i topplinjen trenger det. Lag og trekninger hentes først når siden åpnes.
+async function loadLedger() {
+  if (state.demo) { state.kasse = { ...demoKasse(), failed: false }; return; }
+  try {
+    state.kasse.rows = await sbGet('ledger?select=id,booked_on,kind,title,note,amount,auto_key,auto_runs,created_at&order=booked_on.desc,id.desc&limit=1000');
+    state.kasse.failed = false;
+  } catch { state.kasse.failed = true; }
+}
+let kasseExtra = null;
+function loadKasseExtra() {
+  if (state.demo) return Promise.resolve();
+  kasseExtra ||= Promise.all([
+    sbGet('clubs?select=name,area&order=name'),
+    sbGet('draws?select=month,pot,drawn_at,paid_on,receipt_url,clubs(name,area)&order=month.desc'),
+  ]).then(([clubs, draws]) => { state.kasse.clubs = clubs; state.kasse.draws = draws; })
+    .catch(() => { state.kasse.clubs ??= []; state.kasse.draws ??= []; kasseExtra = null; });
+  return kasseExtra;
 }
 
 async function glad(id) {
@@ -1042,6 +1146,120 @@ function layout(items, isFront) {
   return out.join('');
 }
 
+// ---------- Topplinje: faner, pott-knapp og «i dag»-stripe ----------
+const krFmt = (n, dec = 0) => new Intl.NumberFormat('nb-NO', { minimumFractionDigits: dec, maximumFractionDigits: dec }).format(n);
+const kr = (n) => `${krFmt(n, Number.isInteger(Math.round(n * 100) / 100) ? 0 : 2)} kr`;   // hele kroner uten øre, ellers to desimaler
+function kasseSum(rows = state.kasse.rows || []) {
+  const s = { inn: 0, ut: 0, utbetalt: 0 };
+  for (const r of rows) if (r.kind in s) s[r.kind] += Number(r.amount) || 0;
+  return { ...s, pot: s.inn - s.ut - s.utbetalt };   // potten: alt inn, minus alt ut og alt som er gitt bort
+}
+function todayHtml() {
+  const start = new Date(); start.setHours(0, 0, 0, 0);
+  const todays = grouped().filter((it) => it.score >= state.minScore && new Date(it.published_at) >= start);
+  const parts = [];
+  if (todays.length) parts.push(`<span><i class="dot"></i><b>${todays.length}</b> ${todays.length === 1 ? 'god nyhet' : 'gode nyheter'} i dag</span>`);
+  const d = state.weather?.find((x) => x.date === new Date().toLocaleDateString('sv-SE'));
+  if (d && Number.isFinite(d.tmax)) parts.push(`<span>${wxInfo(d.symbol).icon} <b>${String(d.tmax).replace('-', '−')}°</b> ${esc(areaOf(state.region)?.name || '')}</span>`);
+  const glad = todays.reduce((n, it) => n + (it.glad_count || 0), 0);
+  if (glad) parts.push(`<span><b>${glad}</b> gledet seg</span>`);
+  return parts.join('');
+}
+function renderTop() {
+  const tabs = $('tabsIn'), left = tabs.scrollLeft;
+  tabs.innerHTML = [...SECTIONS, { id: 'kasse', label: 'Åpen kasse' }].map((t) =>
+    `<button data-sec="${t.id}"${t.id === 'kasse' ? ' class="t-kasse"' : ''} aria-current="${!state.category && t.id === state.section}">${t.label}</button>`).join('');
+  tabs.scrollLeft = left;
+  const on = tabs.querySelector('[aria-current="true"]');   // sørg for at den valgte fanen er synlig
+  if (on && (on.offsetLeft < tabs.scrollLeft || on.offsetLeft + on.offsetWidth > tabs.scrollLeft + tabs.clientWidth - 30)) tabs.scrollLeft = Math.max(0, on.offsetLeft - 16);
+  const { pot } = kasseSum();
+  const has = state.kasse.rows && pot >= 1;
+  $('potPill').innerHTML = `<span class="ic">${ICON.hjerte}</span><span>${has ? `<b>${krFmt(Math.floor(pot))} kr</b><small>til lokale lag</small>` : '<b>Åpen kasse</b><small>se regnskapet</small>'}</span>`;
+  $('potPill').setAttribute('aria-label', has ? `Åpen kasse: ${krFmt(Math.floor(pot))} kr til lokale lag` : 'Åpen kasse: se regnskapet');
+  const today = state.section === 'forsiden' && !state.category ? todayHtml() : '';
+  $('today').hidden = !today; $('today').innerHTML = today ? `<div><p>${today}</p></div>` : '';
+}
+
+// ---------- Åpen kasse: siden ----------
+const monthName = (ym) => { const [y, m] = ym.split('-').map(Number); const t = new Date(y, m - 1, 1).toLocaleDateString('nb-NO', { month: 'long', year: 'numeric' }); return t[0].toUpperCase() + t.slice(1); };
+const dateNo = (d) => new Date(String(d).slice(0, 10) + 'T12:00:00').toLocaleDateString('nb-NO', { day: 'numeric', month: 'long', year: 'numeric' });
+function kasseRow(r) {
+  const runs = r.auto_runs ? ` ${krFmt(r.auto_runs)} ${r.auto_runs === 1 ? 'kjøring' : 'kjøringer'} hittil.` : '';
+  return `<div><b>${esc(r.title)}${r.auto_key ? '<span class="tag">oppdateres selv</span>' : ''}</b><em>${kr(Number(r.amount))}</em>${r.note || runs ? `<small>${esc(r.note || '')}${runs}</small>` : ''}</div>`;
+}
+function kasseMonth(ym, rows, open) {
+  const sum = (a) => a.reduce((n, r) => n + Number(r.amount), 0);
+  const ut = rows.filter((r) => r.kind === 'ut'), inn = rows.filter((r) => r.kind === 'inn');
+  const list = (title, a, total, empty) => `<p class="k-under">${title}</p>`
+    + (a.length ? `<div class="k-liste">${a.map(kasseRow).join('')}<div><b>${total}</b><em>${kr(sum(a))}</em></div></div>` : `<p class="k-tom">${empty}</p>`);
+  const body = list('Ut: dette kostet GN24', ut, 'Sum ut', 'Ingen kostnader er ført.') + list('Inn: her kom pengene fra', inn, 'Sum inn', 'Ingen inntekter ennå.');
+  return open ? `<h3>${monthName(ym)}</h3>${body}${KASSE_GRATIS ? `<p class="k-note">${esc(KASSE_GRATIS)}</p>` : ''}`
+    : `<details class="k-eldre"><summary>${monthName(ym)}: inn ${kr(sum(inn))}, ut ${kr(sum(ut))}</summary>${body}</details>`;
+}
+function kasseMoneyHtml() {
+  const k = state.kasse;
+  if (!k.rows) return `<p class="k-tom">${k.failed ? 'Fikk ikke lastet regnskapet. Prøv igjen om litt.' : 'Laster regnskapet …'}</p>`;
+  const s = kasseSum(k.rows), months = new Map();
+  for (const r of k.rows) { const ym = String(r.booked_on).slice(0, 7); if (!months.has(ym)) months.set(ym, []); months.get(ym).push(r); }
+  const yms = [...months.keys()].sort().reverse();
+  const status = !k.rows.length ? 'Ingenting er ført ennå.'
+    : s.pot < 0 ? `GN24 har så langt brukt ${kr(-s.pot)} mer enn det har tjent. Potten begynner å vokse når inntektene har dekket det.`
+    : s.pot >= KASSE_MIN_POT ? 'Hele potten går til laget som trekkes den første i neste måned.'
+    : `Potten trekkes når den er over ${kr(KASSE_MIN_POT)}.`;
+  const first = k.rows.map((r) => r.created_at).filter(Boolean).sort()[0];
+  return `<div class="k-sum"><small>I potten nå</small><span class="big" id="kPot">${kr(Math.max(s.pot, 0))}</span><p>${status}</p>
+      <div class="k-tre"><div><small>Inn i alt</small><b>${kr(s.inn)}</b></div><div><small>Ut i alt</small><b>${kr(s.ut)}</b></div><div><small>Gitt til lag</small><b>${kr(s.utbetalt)}</b></div></div></div>
+    ${yms.map((ym, i) => kasseMonth(ym, months.get(ym), i === 0)).join('')}
+    ${first ? `<p class="k-fra">Regnskapet er ført siden ${dateNo(first)}.</p>` : ''}`;
+}
+function kasseListsHtml() {
+  const k = state.kasse, area = (id) => areaOf(id)?.name || '';
+  const clubs = k.clubs == null ? '<p class="k-tom">Laster …</p>'
+    : !k.clubs.length ? '<p class="k-tom">Ingen lag er påmeldt ennå. Bli det første!</p>'
+    : `<ul class="k-lag">${k.clubs.map((c) => `<li>${esc(c.name)}<span>${esc(area(c.area))}</span></li>`).join('')}</ul>`;
+  const draws = k.draws == null ? '<p class="k-tom">Laster …</p>'
+    : !k.draws.length ? `<p class="k-tom">Ingen trekninger ennå. Den første skjer når potten er over ${kr(KASSE_MIN_POT)}.</p>`
+    : `<div class="k-liste">${k.draws.map((d) => `<div><b>${esc(d.clubs?.name || 'Ukjent lag')}</b><em>${kr(Number(d.pot))}</em>
+        <small>Potten for ${monthName(String(d.month).slice(0, 7)).toLowerCase()} · ${d.paid_on ? `utbetalt ${dateNo(d.paid_on)}` : 'venter på utbetaling'}${/^https:\/\//.test(d.receipt_url || '') ? ` · <a href="${esc(d.receipt_url)}" target="_blank" rel="noopener">se kvittering</a>` : ''}</small></div>`).join('')}</div>`;
+  return `<h3>Påmeldte lag</h3>${clubs}<h3>Trekninger</h3>${draws}`;
+}
+const joinFormHtml = () => `<form class="k-form" id="joinForm" novalidate>
+    <label><span>Lagets navn</span><input name="name" required maxlength="80" autocomplete="organization"></label>
+    <label><span>Område</span><select name="area">${REGIONS.map((r) => `<option value="${esc(r.id)}"${r.id === state.region ? ' selected' : ''}>${esc(r.name)}</option>`).join('')}<option value="">Et annet sted</option></select></label>
+    <label><span>E-post til kontaktperson</span><input name="email" type="email" required maxlength="120" autocomplete="email" inputmode="email"></label>
+    <label><span>Organisasjonsnummer <small>(valgfritt)</small></span><input name="org" inputmode="numeric" maxlength="11" autocomplete="off"></label>
+    <div class="hp" aria-hidden="true"><label><span>Nettside</span><input name="website" tabindex="-1" autocomplete="off"></label></div>
+    <button class="k-knapp" type="submit">Meld på laget</button>
+    <p class="k-msg" id="joinMsg" role="status" aria-live="polite"></p>
+    <p class="fine">E-postadressen brukes bare til å kontakte laget hvis det vinner, og vises aldri på siden. Laget kommer på lista når påmeldingen er sjekket.</p>
+  </form>`;
+// Skjemaet tegnes bare én gang, så det ikke tømmes når tallene rundt oppdateres
+function renderKasse() {
+  if (!document.querySelector('#feed .kasse')) {
+    $('feed').innerHTML = `<section class="kasse">
+      <div class="kick">Åpen kasse</div>
+      <h1>Hver krone, helt åpent</h1>
+      <p class="ing">Her ser du alt som kommer inn og alt som går ut av GN24. Det som blir igjen, går til lokale lag: Hver måned trekkes ett påmeldt lag, og det får hele potten.</p>
+      <div id="kMoney"></div>
+      <h3>Meld på laget ditt</h3>
+      <p class="lead">Lokale idrettslag og andre frivillige lag kan være med i trekningen. Det er gratis, og hvert lag har ett lodd.</p>
+      ${joinFormHtml()}
+      <div id="kLists"></div>
+      <h3>Reglene</h3>
+      <ol class="k-regler">
+        <li>Alt som kommer inn og går ut av GN24, står på denne siden med navn og beløp.</li>
+        <li>Potten er alt som er kommet inn, minus alt som er gått ut. Er den i minus, må underskuddet tjenes inn først.</li>
+        <li>Den første i hver måned trekkes ett av de påmeldte lagene, og det får hele potten. Er potten under ${kr(KASSE_MIN_POT)}, går den videre til neste måned.</li>
+        <li>Det er gratis å melde på et lag, og hvert lag har ett lodd.</li>
+        <li>Et lag som har vunnet, står over de neste ${KASSE_PAUSE_MND} månedene.</li>
+        <li>Annonsører kan ikke kjøpe seg omtale i nyhetene.</li>
+      </ol>
+    </section>`;
+  }
+  $('kMoney').innerHTML = kasseMoneyHtml();
+  $('kLists').innerHTML = kasseListsHtml();
+}
+
 // ---------- Visning ----------
 function render() {
   const isFront = state.section === 'forsiden' && !state.category;
@@ -1054,7 +1272,8 @@ function render() {
   const count = (f) => groups.filter((it) => it.score >= state.minScore && f(it)).length;
   const frontCount = thinSport(groups.filter((it) => it.score >= state.minScore).sort((a, b) => tkey(b) - tkey(a))).length;
   $('menuSections').innerHTML = SECTIONS.map((s) => `<li><button data-sec="${s.id}" aria-current="${!state.category && s.id === state.section}">${s.label}
-      <span class="count">${s.id === 'forsiden' ? frontCount : count((it) => inSection(it, s.id))}</span></button></li>`).join('');
+      <span class="count">${s.id === 'forsiden' ? frontCount : count((it) => inSection(it, s.id))}</span></button></li>`).join('')
+    + `<li><button data-sec="kasse" aria-current="${state.section === 'kasse'}">Åpen kasse</button></li>`;
   $('menuCats').innerHTML = catsPresent.map((c) => `<li><button data-cat="${esc(c)}" aria-current="${state.category === c}">${esc(c)}
       <span class="count">${count((it) => it.category === c)}</span></button></li>`).join('');
   $('segStrict').innerHTML = STRICT.map((s) => `<button data-strict="${s.v}" aria-pressed="${s.v === state.minScore}">${s.label}</button>`).join('');
@@ -1075,6 +1294,12 @@ function render() {
     $('srcCount').textContent = `${srcList.filter((m) => !srcOff.has(m.source)).length} av ${srcList.length} vises`;
   }
 
+  renderTop();
+  if (state.section === 'kasse') {
+    renderKasse();
+    if (state.kasse.clubs == null) loadKasseExtra().then(() => { if (state.section === 'kasse') renderKasse(); });
+    return;
+  }
   requestAnimationFrame(fitSources);
   const { pinned, list } = frontOrder(items);
   $('feed').innerHTML = items.length ? (pinned ? sunCard(pinned) : '') + layout(list, isFront)
@@ -1088,7 +1313,26 @@ function setMenu(open) {
   $('drawer').setAttribute('aria-hidden', !open); $('openMenu').setAttribute('aria-expanded', open);
   if (open) $('closeMenu').focus();
 }
-function go(patch) { Object.assign(state, patch); savePrefs(); render(); window.scrollTo({ top: 0 }); }
+function go(patch) {
+  Object.assign(state, patch); savePrefs();
+  const want = state.section === 'kasse' ? '#kasse' : '';   // Åpen kasse har egen adresse, så siden kan deles og tilbake-knappen virker
+  if (location.hash !== want) history.pushState(null, '', want || location.pathname + location.search);
+  document.body.classList.remove('tabs-up');
+  render(); window.scrollTo({ top: 0 });
+}
+addEventListener('popstate', () => {
+  const kasse = location.hash === '#kasse';
+  if (kasse === (state.section === 'kasse')) return;
+  state.section = kasse ? 'kasse' : 'forsiden'; state.category = null; render(); window.scrollTo({ top: 0 });
+});
+// Fanene glir unna når man blar nedover, og kommer tilbake når man blar opp
+let lastY = 0;
+addEventListener('scroll', () => {
+  const y = window.scrollY;
+  if (Math.abs(y - lastY) < 8) return;
+  document.body.classList.toggle('tabs-up', y > lastY && y > 160);
+  lastY = y;
+}, { passive: true });
 
 $('openMenu').addEventListener('click', () => setMenu(true));
 $('closeMenu').addEventListener('click', () => setMenu(false));
@@ -1161,6 +1405,7 @@ document.addEventListener('click', (e) => {
   const d = b.dataset;
   if (d.srcToggle) { srcOff.has(d.srcToggle) ? srcOff.delete(d.srcToggle) : srcOff.add(d.srcToggle); saveSrc(); render(); return; }
   if (d.srcAll) { if (d.srcAll === 'on') srcOff.clear(); else state.items.forEach((it) => srcOff.add(it.source)); saveSrc(); render(); return; }
+  if ('joinMore' in d) { $('joinDone').outerHTML = joinFormHtml(); return; }
   if (d.sec) go({ section: d.sec, category: null });
   else if (d.cat) go({ category: d.cat });
   else if (d.strict) go({ minScore: Number(d.strict) });
@@ -1216,6 +1461,33 @@ srcUl.addEventListener('keydown', (e) => {
   srcUl.insertBefore(up ? li : other, up ? other : li);
   const name = li.dataset.src; saveOrder(); render();
   [...srcUl.children].find((x) => x.dataset.src === name)?.querySelector('[data-grip]').focus();
+});
+// ---------- Åpen kasse: påmelding av lag ----------
+document.addEventListener('submit', async (e) => {
+  const f = e.target.closest('#joinForm'); if (!f) return;
+  e.preventDefault();
+  const msg = $('joinMsg'), btn = f.querySelector('button[type="submit"]');
+  const say = (text, err) => { msg.textContent = text; msg.className = 'k-msg' + (err ? ' err' : ''); };
+  const v = Object.fromEntries(new FormData(f));
+  const name = v.name.trim().replace(/\s+/g, ' '), email = v.email.trim(), org = v.org.replace(/\D/g, '');
+  if (name.length < 2) return say('Skriv inn navnet på laget.', true);
+  if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(email)) return say('Sjekk e-postadressen.', true);
+  if (org && org.length !== 9) return say('Organisasjonsnummeret skal ha ni siffer.', true);
+  const done = () => { f.outerHTML = `<div class="k-form" id="joinDone"><p class="k-msg" role="status">Takk! ${esc(name)} er meldt på. Laget kommer på lista når påmeldingen er sjekket.</p>
+    <button class="k-knapp" type="button" data-join-more>Meld på et lag til</button></div>`; };
+  if (v.website) return done();   // det skjulte feltet fylles bare ut av roboter
+  if (state.demo) return say('Dette er eksempelsiden. Påmeldingen ble ikke sendt.', true);
+  btn.disabled = true; say('Sender …');
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/join_draw`, { method: 'POST', headers: { ...sbHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_name: name, p_area: v.area || null, p_email: email, p_org: org || null }) });
+    if (!res.ok) throw new Error(res.status);
+    const r = await res.json();
+    if (r === 'ok') return done();
+    say({ exists: 'Dette laget er allerede meldt på.', invalid_name: 'Lagnavnet kan ikke brukes. Prøv uten lenker og spesialtegn.', invalid_email: 'Sjekk e-postadressen.',
+      invalid_org: 'Organisasjonsnummeret skal ha ni siffer.', busy: 'Det er mange påmeldinger akkurat nå. Prøv igjen om en stund.' }[r] || 'Noe gikk galt. Prøv igjen.', true);
+  } catch { say('Fikk ikke sendt påmeldingen. Prøv igjen om litt.', true); }
+  btn.disabled = false;
 });
 document.addEventListener('visibilitychange', () => { if (!document.hidden && !state.demo && Date.now() - loadedAt > REFRESH_MIN * 60e3) load(true); });
 
@@ -1273,6 +1545,18 @@ const DEMO_BASE = DEMO_LIST.map((d, i) => ({ id: `demo${i}`, url: '#', ...d,
 const also = (i, ...names) => names.map((n) => ({ ...DEMO_BASE[i], id: `${DEMO_BASE[i].id}-${n}`, story_id: DEMO_BASE[i].id, source: n, glad_count: 0, paywall: DEMO_PLUS.has(n) }));
 const DEMO = [...DEMO_BASE, ...also(0, 'Buskerud Blad', 'Riksnytt', 'Ekko Drammen', 'Vestviken Tidende'), ...also(4, 'Riksnytt', 'Kystavisa', 'Havbladet', 'Nordlys Nett'), ...also(1, 'Buskerud Blad'),
   ...also(13, 'Buskerud Blad', 'Sportsbladet'), ...also(16, 'Riksnytt', 'Verdensposten')];
+
+// Eksempeltall til Åpen kasse (vises bare før Supabase er koblet til)
+function demoKasse() {
+  const ym = new Date().toLocaleDateString('sv-SE').slice(0, 7), at = new Date().toISOString();
+  const row = (id, kind, title, amount, note, extra = {}) => ({ id, booked_on: `${ym}-01`, kind, title, amount, note, auto_key: null, auto_runs: null, created_at: at, ...extra });
+  return { rows: [
+    row(1, 'ut', 'Kunstig intelligens', 612, 'Claude leser, sorterer og skriver om nyhetene.', { auto_key: 'ai-demo', auto_runs: 1440 }),
+    row(2, 'ut', 'Domene', 13, '159 kr i året.'),
+    row(3, 'inn', 'Sykkelverkstedet', 3000, 'Annonsørinnhold, 4 uker.'),
+    row(4, 'inn', 'Bryggeriet Kaffebar', 2500, 'Annonse, 4 uker.'),
+  ], clubs: [{ name: 'Eksempel IL', area: 'drammen' }, { name: 'Eksempel Turn', area: 'lier' }], draws: [] };
+}
 
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 $('year').textContent = new Date().getFullYear();

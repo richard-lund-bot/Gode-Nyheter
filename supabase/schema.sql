@@ -186,3 +186,158 @@ revoke all on function private.start_news_job() from public, anon, authenticated
 select cron.schedule('gode-nyheter-hent', '22,52 * * * *', $cron$select private.start_news_job()$cron$);
 -- Rydd i loggen over cron-kjøringer én gang i døgnet
 select cron.schedule('gode-nyheter-rydd-cronlogg', '15 3 * * *', $cron$delete from cron.job_run_details where end_time < now() - interval '7 days'$cron$);
+
+-- v2.0: Åpen kasse – åpent regnskap, påmelding av lag og månedlig trekning
+-- Regnskapet: én linje per inntekt, kostnad eller utbetaling. Alle kan lese, bare eieren og jobben kan skrive.
+create table if not exists public.ledger (
+  id          bigint generated always as identity primary key,
+  booked_on   date not null default current_date,
+  kind        text not null check (kind in ('inn', 'ut', 'utbetalt')),   -- inntekt, kostnad eller utbetalt til et lag
+  title       text not null check (char_length(title) between 1 and 120),
+  note        text check (note is null or char_length(note) <= 300),
+  amount      numeric(12,2) not null check (amount >= 0),               -- kroner
+  auto_key    text unique,            -- satt på linjer jobben fører selv, f.eks. 'ai-2026-11'
+  auto_usd    numeric(14,6),          -- AI-linja: forbruk i dollar hittil i måneden
+  auto_runs   integer,                -- AI-linja: antall kjøringer hittil i måneden
+  auto_rate   numeric(10,4),          -- AI-linja: dollarkursen som ble brukt sist
+  draw_id     bigint,                 -- utbetalinger: hvilken trekning linja gjelder
+  created_at  timestamptz not null default now()
+);
+create index if not exists ledger_booked_on on public.ledger (booked_on desc);
+
+-- Lag som er meldt på trekningen. Vises først når eieren har satt status til 'approved'.
+create table if not exists public.clubs (
+  id          bigint generated always as identity primary key,
+  name        text not null check (char_length(name) between 2 and 80),
+  area        text,                   -- id fra regions.json, eller null
+  status      text not null default 'pending' check (status in ('pending', 'approved', 'rejected')),
+  created_at  timestamptz not null default now()
+);
+create unique index if not exists clubs_name_area on public.clubs (lower(name), coalesce(area, ''));
+
+-- Kontaktinformasjon ligger i en egen tabell uten offentlig tilgang.
+create table if not exists public.club_contacts (
+  club_id     bigint primary key references public.clubs(id) on delete cascade,
+  email       text not null,
+  org_number  text,
+  created_at  timestamptz not null default now()
+);
+
+-- Trekninger: hvem som vant hvilken måneds pott, og hvilke lag som var med.
+create table if not exists public.draws (
+  id          bigint generated always as identity primary key,
+  month       date not null unique,   -- første dag i måneden potten gjelder
+  pot         numeric(12,2) not null check (pot > 0),
+  club_id     bigint not null references public.clubs(id),
+  entrants    jsonb not null,         -- navnene på alle lagene som var med i trekningen
+  drawn_at    timestamptz not null default now(),
+  paid_on     date,
+  receipt_url text
+);
+create index if not exists draws_club on public.draws (club_id);
+do $$ begin
+  if not exists (select 1 from pg_constraint where conname = 'ledger_draw_fk') then
+    alter table public.ledger add constraint ledger_draw_fk foreign key (draw_id) references public.draws(id);
+  end if;
+end $$;
+create index if not exists ledger_draw on public.ledger (draw_id) where draw_id is not null;
+
+alter table public.ledger enable row level security;
+alter table public.clubs enable row level security;
+alter table public.club_contacts enable row level security;   -- ingen offentlig tilgang
+alter table public.draws enable row level security;
+drop policy if exists "Offentlig lesing av regnskapet" on public.ledger;
+create policy "Offentlig lesing av regnskapet" on public.ledger for select to anon using (true);
+drop policy if exists "Offentlig lesing av godkjente lag" on public.clubs;
+create policy "Offentlig lesing av godkjente lag" on public.clubs for select to anon using (status = 'approved');
+drop policy if exists "Offentlig lesing av trekninger" on public.draws;
+create policy "Offentlig lesing av trekninger" on public.draws for select to anon using (true);
+
+-- Påmelding fra nettsiden. Laget blir stående som 'pending' til eieren har godkjent det.
+create or replace function public.join_draw(p_name text, p_area text, p_email text, p_org text default null)
+returns text language plpgsql security definer set search_path = '' as $$
+declare
+  v_name  text := btrim(regexp_replace(coalesce(p_name, ''), '\s+', ' ', 'g'));
+  v_email text := lower(btrim(coalesce(p_email, '')));
+  v_org   text := nullif(regexp_replace(coalesce(p_org, ''), '\D', '', 'g'), '');
+  v_area  text := nullif(btrim(coalesce(p_area, '')), '');
+  v_id    bigint;
+begin
+  if char_length(v_name) < 2 or char_length(v_name) > 80 or v_name ~* '[<>]|https?:|www\.' then return 'invalid_name'; end if;
+  if char_length(v_email) > 120 or v_email !~ '^[^@[:space:]]+@[^@[:space:]]+\.[a-z]{2,}$' then return 'invalid_email'; end if;
+  if v_org is not null and char_length(v_org) <> 9 then return 'invalid_org'; end if;
+  if v_area is not null and v_area !~ '^[a-z0-9-]{1,40}$' then v_area := null; end if;
+  -- enkel sperre mot masseinnsending
+  if (select count(*) from public.clubs where created_at > now() - interval '1 hour') >= 20 then return 'busy'; end if;
+  if exists (select 1 from public.clubs where lower(name) = lower(v_name) and coalesce(area, '') = coalesce(v_area, '')) then return 'exists'; end if;
+  insert into public.clubs (name, area) values (v_name, v_area) returning id into v_id;
+  insert into public.club_contacts (club_id, email, org_number) values (v_id, v_email, v_org);
+  return 'ok';
+end $$;
+revoke all on function public.join_draw(text, text, text, text) from public, authenticated;
+grant execute on function public.join_draw(text, text, text, text) to anon;
+
+-- Innsamlingsjobben fører AI-kostnaden selv: én linje per måned som vokser for hver kjøring.
+-- Uten kurs (Norges Bank svarer ikke) brukes kursen fra forrige føring.
+create or replace function public.kasse_add_ai(p_usd numeric, p_rate numeric default null)
+returns numeric language plpgsql security invoker set search_path = '' as $$
+declare
+  v_day  date := (now() at time zone 'Europe/Oslo')::date;
+  v_key  text := 'ai-' || to_char(v_day, 'YYYY-MM');
+  v_rate numeric := p_rate;
+  v_sum  numeric;
+begin
+  if p_usd is null or p_usd < 0 then return null; end if;
+  if v_rate is null or v_rate <= 0 then
+    select auto_rate into v_rate from public.ledger where auto_rate is not null order by booked_on desc, id desc limit 1;
+  end if;
+  if v_rate is null then return null; end if;   -- ingen kurs å regne med ennå: ikke før noe
+  insert into public.ledger (booked_on, kind, title, note, amount, auto_key, auto_usd, auto_runs, auto_rate)
+  values (v_day, 'ut', 'Kunstig intelligens',
+          'Claude leser, sorterer og skriver om nyhetene. Beregnet fra faktisk bruk og regnet om fra dollar med Norges Banks kurs.',
+          round(p_usd * v_rate, 2), v_key, p_usd, 1, v_rate)
+  on conflict (auto_key) do update
+    set auto_usd  = public.ledger.auto_usd + excluded.auto_usd,
+        auto_runs = public.ledger.auto_runs + 1,
+        auto_rate = excluded.auto_rate,
+        amount    = round((public.ledger.auto_usd + excluded.auto_usd) * excluded.auto_rate, 2),
+        booked_on = excluded.booked_on
+  returning amount into v_sum;
+  return v_sum;
+end $$;
+revoke all on function public.kasse_add_ai(numeric, numeric) from public, anon, authenticated;
+grant execute on function public.kasse_add_ai(numeric, numeric) to service_role;
+
+-- Månedlig trekning. Står IKKE på tidsplan – kjøres for hånd:  select private.run_monthly_draw();
+-- Potten er alt som er kommet inn minus alt som er gått ut til og med forrige måned.
+-- Er den under minstegrensen, skjer ingenting, og potten går videre til neste måned.
+create or replace function private.run_monthly_draw(p_min numeric default 500)
+returns text language plpgsql security definer set search_path = '' as $$
+declare
+  v_this  date := date_trunc('month', now() at time zone 'Europe/Oslo')::date;
+  v_month date := (v_this - interval '1 month')::date;
+  v_pot   numeric;
+  v_names jsonb;
+  v_club  bigint;
+  v_name  text;
+  v_draw  bigint;
+begin
+  if exists (select 1 from public.draws where month = v_month) then return 'allerede trukket'; end if;
+  select coalesce(sum(case kind when 'inn' then amount else -amount end), 0) into v_pot
+    from public.ledger where booked_on < v_this;
+  if v_pot < p_min then return 'potten er under minstegrensen'; end if;
+  -- Med i trekningen: godkjente lag som ikke har vunnet de siste tolv månedene. Ett lodd per lag.
+  create temp table _entrants on commit drop as
+    select c.id, c.name from public.clubs c
+     where c.status = 'approved'
+       and not exists (select 1 from public.draws d where d.club_id = c.id and d.month > (v_month - interval '12 months'));
+  select jsonb_agg(name order by name) into v_names from _entrants;
+  if v_names is null then drop table _entrants; return 'ingen lag er med'; end if;
+  select id, name into v_club, v_name from _entrants order by gen_random_uuid() limit 1;
+  drop table _entrants;
+  insert into public.draws (month, pot, club_id, entrants) values (v_month, v_pot, v_club, v_names) returning id into v_draw;
+  insert into public.ledger (booked_on, kind, title, note, amount, draw_id)
+  values (v_this, 'utbetalt', v_name, 'Trekning for ' || to_char(v_month, 'YYYY-MM'), v_pot, v_draw);
+  return 'trukket: ' || v_name;
+end $$;
+revoke all on function private.run_monthly_draw(numeric) from public, anon, authenticated;
