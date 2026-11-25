@@ -57,6 +57,36 @@ Uten nøkler viser `index.html` eksempelsaker, slik at du kan jobbe med designet
 - Nye kilder: NRK Sport siste, BBC Sport og Google Nyheter-søk på Strømsgodset og Drammen-idrett.
 - Prompten slipper gjennom seire, rekorder, fair play, breddeidrett og mestring (7–9), men holder tap, skader, skandaler og overgangsrykter nede (maks 5).
 
+## Topplinje med faner og Åpen kasse (v2.0)
+
+**Topplinjen** er én linje: logo, faner, været, en gul knapp som viser potten, og menyen.
+
+- **Pott-knappen** har alltid plass og fører til Åpen kasse.
+- **Fanene** (Forsiden, Lokalt, Norge, Verden, Idrett) vises bare hvis de får plass i sin helhet mellom logoen og pott-knappen. På en vanlig telefon blir det ingen eller én, på PC alle. Resten ligger i menyen. `fitTabs()` i `index.html` styrer dette.
+- **Været** der leseren bor lenker til yr for akkurat det stedet. På PC står det i topplinjen. På mobil står det i en smal stripe under, bare på forsiden, sammen med «Bytt sted», som åpner menyen på «Mitt område».
+- **Stedet** leseren velger, huskes i nettleseren. Det er ingen innlogging.
+- **Første besøk:** siden spør «Hvor bor du?» én gang per nettleser, med «Finn nærmeste» (telefonens posisjon), områdene som knapper og «Ikke nå». Svaret huskes (`gn-place-asked` i nettleserens lager), så spørsmålet ikke kommer igjen der. Det kommer på nytt i en annen nettleser, på en annen enhet, i privat modus eller når nettleserdata slettes. Den som allerede har valgt et annet område enn Drammen, blir ikke spurt.
+
+**Åpen kasse** (`#kasse`) viser alt som kommer inn og går ut, og hvem som får overskuddet. Den leser fire tabeller i databasen:
+
+| Tabell | Innhold | Hvem ser den |
+|---|---|---|
+| `ledger` | Regnskapet: én linje per inntekt (`inn`), kostnad (`ut`) eller utbetaling til et lag (`utbetalt`) | Alle |
+| `clubs` | Påmeldte lag. Nye står som `pending` og vises først når `status` er `approved` | Alle ser de godkjente |
+| `club_contacts` | E-post og organisasjonsnummer til lagene | Bare eieren |
+| `draws` | Trekninger: måned, pott, vinner og hvilke lag som var med | Alle |
+
+Slik gjør du det vanligste, i Supabase → Table Editor:
+
+- **Føre en inntekt eller kostnad:** `ledger` → Insert row. Fyll ut `kind` (`inn` eller `ut`), `title`, `amount` (kroner), `booked_on` (dato) og gjerne `note`.
+- **Godkjenne et lag:** `clubs` → sett `status` til `approved` (eller `rejected`). Kontaktinformasjonen står i `club_contacts`.
+- **Trekke en vinner:** SQL Editor → `select private.run_monthly_draw();`. Funksjonen trekker blant godkjente lag som ikke har vunnet de siste tolv månedene, og fører utbetalingen i regnskapet. Den gjør ingenting hvis potten er under 500 kr, eller hvis måneden allerede er trukket. Den står ikke på tidsplan.
+- **Merke en utbetaling som gjort:** `draws` → fyll ut `paid_on` og eventuelt `receipt_url` (må begynne med `https://`).
+
+**AI-kostnaden føres av seg selv.** Innsamlingsjobben regner ut hva hver kjøring kostet (tokens og nettsøk, etter prislista i `scripts/kasse.mjs`), henter dollarkursen fra Norges Bank og legger beløpet til månedens linje «Kunstig intelligens». Det er et beregnet tall. Når fakturaen kommer, kan du rette beløpet på linja for en avsluttet måned. Jobben rører bare inneværende måned. Bytter du modell, må prisen legges inn i `scripts/kasse.mjs`, ellers blir kallene ikke ført (jobben sier fra i loggen).
+
+Reglene som står på siden, ligger øverst i `index.html` (`KASSE_MIN_POT`, `KASSE_PAUSE_MND`, `KASSE_GRATIS`) og i lista i `renderKasse()`. Endrer du minstegrensen, må den også sendes med til trekningen: `select private.run_monthly_draw(1000);`.
+
 ## Store overskrifter og fast lyst utseende (v1.9)
 
 - **Overskrifter som på en avisforside.** Sakenes overskrifter settes i en kraftig avisskrift (Source Serif 4 Black, ligger i `fonts/` og følger med siden – lisens i `fonts/OFL.txt`). I de store kortene deles tittelen på noen få linjer, og hver linje strekkes så den fyller kortbredden. Det gjør `fitTitles()` i `index.html`; innstillingene står i `FIT` (høyst antall linjer, ønsket størrelse og største størrelse per korttype). Blir en tittel for lang til å se bra ut, brytes den som vanlig tekst.

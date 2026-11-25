@@ -3,6 +3,7 @@
 // 2) Scriptet åpner hver side selv og sjekker at den finnes og er en turbeskrivelse – først da godkjennes turen
 // 3) Planleggeren velger en verifisert tur for en fin helgedag. Ingen klokkeslett – bare en oppfordring.
 import { kindOf, OUTDOOR } from './weather.mjs';
+import { meter } from './kasse.mjs';
 
 // Godkjente tursider: domene → regel for hva som er en turbeskrivelse
 export const VERIFIED_SOURCES = {
@@ -120,6 +121,7 @@ export async function discoverSpots(db, ai, region) {
     tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 4, allowed_domains: Object.keys(VERIFIED_SOURCES) }],
     messages: [{ role: 'user', content: `Område: ${region.name}. Finn inntil 6 turforslag. Har allerede: ${[...have].join(', ') || 'ingen'}.` }],
   });
+  meter.add(SEARCH_MODEL, res.usage);
   // Ta bare med lenker som faktisk dukket opp i søkeresultatene (ikke noe modellen har skrevet selv)
   const seen = new Set();
   for (const b of res.content) {
@@ -177,6 +179,7 @@ export async function planEvents(db, ai, regions, weatherByRegion) {
         område: region.name, dag: day.date, vær: { type: kind, symbol: day.symbol, tmin: day.tmin, tmax: day.tmax, nedbør_mm: day.precip },
         turer: candidates.map((s, i) => ({ i, navn: s.name, grad: s.difficulty, km: s.distance_km, timer: s.duration_h })),
       }) }] });
+      meter.add(MODEL, res.usage);
       const t = res.content.filter((b) => b.type === 'text').map((b) => b.text).join('');
       plan = JSON.parse(t.slice(t.indexOf('{'), t.lastIndexOf('}') + 1));
     } catch (e) { console.warn(`Fellestur ${region.name}: Claude feilet (${e.message}) – bruker reserveplan`); }
