@@ -59,7 +59,12 @@ Uten nøkler viser `index.html` eksempelsaker, slik at du kan jobbe med designet
 
 ## Topplinje med faner og Åpen kasse (v2.0)
 
-**Topplinjen** har fått faner (Forsiden, Lokalt, Norge, Verden, Idrett, Åpen kasse) og en gul knapp som viser potten. Fanene glir unna når man blar nedover og kommer tilbake når man blar opp. Øverst på forsiden står en smal stripe med antall gode nyheter i dag, været der du bor og hvor mange som har gledet seg.
+**Topplinjen** er én linje: logo, faner, været, en gul knapp som viser potten, og menyen.
+
+- **Pott-knappen** har alltid plass og fører til Åpen kasse.
+- **Fanene** (Forsiden, Lokalt, Norge, Verden, Idrett) vises bare hvis de får plass i sin helhet mellom logoen og pott-knappen. På en vanlig telefon blir det ingen eller én, på PC alle. Resten ligger i menyen. `fitTabs()` i `index.html` styrer dette.
+- **Været** der leseren bor lenker til yr for akkurat det stedet. På PC står det i topplinjen. På mobil står det i en smal stripe under, bare på forsiden, sammen med «Bytt sted», som åpner menyen på «Mitt område».
+- **Stedet** leseren velger, huskes i nettleseren. Det er ingen innlogging.
 
 **Åpen kasse** (`#kasse`) viser alt som kommer inn og går ut, og hvem som får overskuddet. Den leser fire tabeller i databasen:
 

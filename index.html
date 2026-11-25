@@ -36,7 +36,7 @@
 
   /* ---------- Toppbanner ---------- */
   .top { position: sticky; top: 0; z-index: 20; background: var(--brand); color: #fff; padding-top: env(safe-area-inset-top); }
-  .bar { max-width: 980px; margin: 0 auto; height: 58px; display: flex; justify-content: space-between; align-items: center; padding: 0 8px 0 16px; }
+  .bar { max-width: 980px; margin: 0 auto; height: 58px; display: flex; justify-content: space-between; align-items: center; gap: 6px; padding: 0 8px 0 16px; }
   .iconbtn { width: 44px; height: 44px; border: 0; background: none; color: inherit; border-radius: 10px; cursor: pointer; display: grid; place-items: center; }
   .iconbtn:active { background: rgba(255,255,255,.12); }
   .logo { display: flex; align-items: center; color: inherit; text-decoration: none; cursor: pointer; }
@@ -47,31 +47,32 @@
   .gn svg { position: absolute; top: -5px; right: -4px; width: 16px; height: 16px; fill: currentColor; stroke: currentColor; }
   .drawer-head .gn { color: var(--brand); }
   :root[data-theme="dark"] .drawer-head .gn, :root[data-theme="dark"] footer .gn { color: var(--ink); }
-  /* Pott-knappen: viser overskuddet som går til lokale lag, og fører til Åpen kasse */
-  .pot { margin-left: auto; margin-right: 2px; display: flex; align-items: center; gap: 7px; border: 0; background: var(--sun); color: #2e1f00;
+  /* Topplinjen er én linje: logo, så mange faner som det er plass til, været (bare PC), pott-knappen og menyen.
+     Faner som ikke får plass, vises ikke – de finnes uansett i menyen. fitTabs() skjuler dem. */
+  .tabs { flex: 1 1 0; min-width: 0; align-self: stretch; display: flex; overflow: hidden; margin-left: 8px; }
+  .tabs button { flex: none; border: 0; background: none; padding: 3px 9px 0; color: rgba(255,255,255,.82); font: 700 .95rem var(--sans);
+                 border-bottom: 3px solid transparent; white-space: nowrap; cursor: pointer; }
+  .tabs button[hidden] { display: none; }
+  .tabs button[aria-current="true"] { color: #fff; border-color: var(--sun); }
+  /* Pott-knappen: viser overskuddet som går til lokale lag, og fører til Åpen kasse. Den har alltid plass. */
+  .pot { flex: 0 1 auto; min-width: 0; overflow: hidden; display: flex; align-items: center; gap: 7px; border: 0; background: var(--sun); color: #2e1f00;
          border-radius: 999px; padding: 4px 13px 4px 5px; cursor: pointer; line-height: 1.05; text-align: left; font-family: var(--sans); }
+  .pot[aria-current="true"] { box-shadow: 0 0 0 2px #fff; }
   .pot .ic { width: 26px; height: 26px; border-radius: 50%; background: #2e1f00; color: var(--sun); display: grid; place-items: center; flex: none; }
   .pot .ic svg { width: 15px; height: 15px; }
   .pot b { display: block; font: 900 1rem/1 var(--news); white-space: nowrap; }
   .pot small { display: block; font: 700 .6rem/1.1 var(--sans); letter-spacing: .03em; text-transform: uppercase; opacity: .85; margin-top: 2px; white-space: nowrap; }
-  /* Faner under topplinjen. De glir opp bak topplinjen når man blar nedover, og kommer tilbake når man blar opp. */
-  .tabs { position: sticky; top: calc(58px + env(safe-area-inset-top)); z-index: 19; background: var(--brand); transition: transform .22s ease; }
-  body.tabs-up .tabs { transform: translateY(-105%); }
-  .tabs-in { max-width: 980px; margin: 0 auto; display: flex; overflow-x: auto; padding: 0 6px; scrollbar-width: none; }
-  .tabs-in::-webkit-scrollbar { display: none; }
-  .tabs-in::after { content: ""; position: sticky; right: -6px; flex: none; width: 30px; margin-left: -30px; background: linear-gradient(90deg, transparent, var(--brand)); pointer-events: none; }
-  .tabs button { flex: none; border: 0; background: none; padding: 9px 10px 8px; color: rgba(255,255,255,.8); font: 700 .95rem var(--sans);
-                 border-bottom: 3px solid transparent; white-space: nowrap; cursor: pointer; }
-  .tabs button:last-child { margin-right: 24px; }
-  .tabs button[aria-current="true"] { color: #fff; border-color: var(--sun); }
-  .tabs button.t-kasse { color: var(--sun); }
-  /* «I dag»-stripa: bare øverst på forsiden, følger ikke med nedover */
+  @media (max-width: 374px) { .pot small { display: none; } .pot { padding-right: 11px; } }   /* smale telefoner: bare beløpet */
+  @media (max-width: 340px) { .pot .ic { display: none; } .pot { padding: 9px 11px; } }
+  /* Været der du bor, med lenke til yr: i topplinjen på PC, i en smal stripe under den på mobil (bare på forsiden) */
+  .wx-top { display: none; flex: none; align-items: center; gap: 6px; color: #fff; text-decoration: none; font: 700 .92rem var(--sans); white-space: nowrap; padding: 6px 8px; border-radius: 8px; }
+  .wx-top span { font-weight: 500; opacity: .85; }
+  .wx-top:hover { background: rgba(255,255,255,.1); }
   .today { background: var(--brand); }
   .today div { background: rgba(0,0,0,.22); }
-  .today p { max-width: 980px; margin: 0 auto; padding: 7px 16px; display: flex; gap: 14px; align-items: center; font: 600 .8rem var(--sans);
-             white-space: nowrap; overflow: hidden; color: rgba(255,255,255,.92); }
-  .today b { color: #fff; }
-  .today .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--sun); box-shadow: 0 0 0 4px rgba(242,181,68,.25); margin: 0 9px 0 4px; vertical-align: 1px; }
+  .today p { max-width: 980px; margin: 0 auto; padding: 6px 8px 6px 16px; display: flex; gap: 10px; align-items: center; justify-content: space-between; font: 500 .88rem var(--sans); color: #fff; }
+  .today a { color: inherit; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .today button { flex: none; border: 1px solid rgba(255,255,255,.4); background: none; color: #fff; border-radius: 999px; padding: 4px 11px; font: 600 .78rem var(--sans); cursor: pointer; }
 
   /* ---------- Sidemeny ---------- */
   .scrim { position: fixed; inset: 0; background: rgba(0,0,0,.45); opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 40; }
@@ -412,9 +413,11 @@
     .pair .t { font-size: 1.7rem; }
     .overlay .ph { aspect-ratio: 16 / 9; }
     .mix, .card { border-radius: 6px; }
-    .tabs button { font-size: 1.02rem; padding: 10px 14px 9px; }
-    .tabs-in::after { display: none; }
+    .tabs { margin-left: 16px; }
+    .tabs button { font-size: 1.02rem; padding: 3px 13px 0; }
     .pot b { font-size: 1.12rem; }
+    .top .wx-top { display: flex; }
+    .top .wx-top[hidden], .top .wx-top.squeezed { display: none; }   /* squeezed: fanene trengte plassen */
     .kasse h1 { font-size: 3.2rem; }
   }
 </style>
@@ -424,13 +427,14 @@
 <header class="top">
   <div class="bar">
     <a class="logo" id="logoHome" href="#" aria-label="GN24 – Gode nyheter, til forsiden"><span class="gn" aria-hidden="true"><b>GN<i>24</i></b><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="3.6"/><g stroke-width="2" stroke-linecap="round"><path d="M10 2v2.5M10 15.5V18M2 10h2.5M15.5 10H18M4.3 4.3l1.8 1.8M13.9 13.9l1.8 1.8M4.3 15.7l1.8-1.8M13.9 6.1l1.8-1.8"/></g></svg></span></a>
+    <nav class="tabs" id="tabs" aria-label="Seksjoner"></nav>
+    <a class="wx-top" id="wxTop" target="_blank" rel="noopener" hidden></a>
     <button class="pot" id="potPill" data-sec="kasse" aria-label="Åpen kasse"></button>
     <button class="iconbtn" id="openMenu" aria-label="Åpne meny" aria-controls="drawer" aria-expanded="false">
       <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
     </button>
   </div>
 </header>
-<nav class="tabs" aria-label="Seksjoner"><div class="tabs-in" id="tabsIn"></div></nav>
 <div class="today" id="today" hidden></div>
 
 <div class="scrim" id="scrim"></div>
@@ -628,6 +632,7 @@ async function loadLocal() {
 }
 // Oppdater bare lys/vær-kortet og fellestur (uten å tegne hele forsiden på nytt)
 function refreshLocal() {
+  renderTop();   // været i topplinjen følger stedet
   const lys = document.querySelector('.lys'); if (lys) lys.outerHTML = lysModule();
   const tur = document.querySelector('.tur'); if (tur) tur.outerHTML = turModule(); else render();
 }
@@ -798,7 +803,7 @@ function fitSources() {
     if (hidden) { plus.hidden = false; plus.textContent = `${hidden} til`; plus.setAttribute('aria-label', `Vis ${hidden} aviser til`); }
   });
 }
-addEventListener('resize', () => requestAnimationFrame(() => { fitSources(); fitTitles(); }));
+addEventListener('resize', () => requestAnimationFrame(() => { fitSources(); fitTitles(); fitTabs(); }));
 // Stikkordet på egen linje, tittelen under. «fit» (hero, big eller pair) gjør at fitTitles() strekker linjene til kortbredden.
 const title = (it, fit) => `${it.kicker ? `<div class="kick">${esc(it.kicker)}</div>` : ''}`
   + `<h2 class="t${fit ? ' fit' : ''}"${fit ? ` data-fit="${fit}" data-t="${esc(it.title_no)}" aria-label="${esc(it.title_no)}"` : ''}>${esc(it.title_no)}</h2>`;
@@ -962,9 +967,12 @@ function pickDays(days) {
   const extra = near !== main && !fine(near) ? near : null;
   return { main, extra };
 }
-function describe(d, kind) {
+function tempRange(d) {
   const n = (x) => String(x).replace('-', '−');
-  const temp = d.tmin === d.tmax ? `${n(d.tmax)}°` : (d.tmin < 0 ? `${n(d.tmin)} til ${n(d.tmax)}°` : `${d.tmin}–${d.tmax}°`);
+  return d.tmin === d.tmax ? `${n(d.tmax)}°` : (d.tmin < 0 ? `${n(d.tmin)} til ${n(d.tmax)}°` : `${d.tmin}–${d.tmax}°`);
+}
+function describe(d, kind) {
+  const temp = tempRange(d);
   const extra = kind === 'vind' ? `, vind ${d.wind} m/s` : OUTDOOR.includes(kind) && d.precip < 0.2 ? ', opphold' : '';
   return `${wxInfo(d.symbol).desc.toLowerCase()}, ${temp}${extra}`;
 }
@@ -1154,30 +1162,38 @@ function kasseSum(rows = state.kasse.rows || []) {
   for (const r of rows) if (r.kind in s) s[r.kind] += Number(r.amount) || 0;
   return { ...s, pot: s.inn - s.ut - s.utbetalt };   // potten: alt inn, minus alt ut og alt som er gitt bort
 }
-function todayHtml() {
-  const start = new Date(); start.setHours(0, 0, 0, 0);
-  const todays = grouped().filter((it) => it.score >= state.minScore && new Date(it.published_at) >= start);
-  const parts = [];
-  if (todays.length) parts.push(`<span><i class="dot"></i><b>${todays.length}</b> ${todays.length === 1 ? 'god nyhet' : 'gode nyheter'} i dag</span>`);
-  const d = state.weather?.find((x) => x.date === new Date().toLocaleDateString('sv-SE'));
-  if (d && Number.isFinite(d.tmax)) parts.push(`<span>${wxInfo(d.symbol).icon} <b>${String(d.tmax).replace('-', '−')}°</b> ${esc(areaOf(state.region)?.name || '')}</span>`);
-  const glad = todays.reduce((n, it) => n + (it.glad_count || 0), 0);
-  if (glad) parts.push(`<span><b>${glad}</b> gledet seg</span>`);
-  return parts.join('');
+// Været i dag der leseren bor, med lenke til yr for akkurat det stedet
+function wxToday() {
+  const d = state.weather?.find((x) => x.date === new Date().toLocaleDateString('sv-SE')), r = home();
+  if (!d || !Number.isFinite(d.tmax) || !r) return null;
+  return { icon: wxInfo(d.symbol).icon, temp: tempRange(d), name: r.name, url: `https://www.yr.no/nb/v%C3%A6rvarsel/daglig-tabell/${r.lat},${r.lon}` };
+}
+// Vis bare fanene som får plass i sin helhet mellom logoen og pott-knappen. Resten ligger i menyen.
+// Fanene går foran været: får ikke alle plass, flyttes været ned i stripa under topplinjen.
+function fitTabs() {
+  const nav = $('tabs'), chip = $('wxTop'), strip = $('today');
+  const fit = () => {
+    const right = nav.getBoundingClientRect().right;
+    let full = false;
+    for (const b of nav.children) { b.hidden = false; if (full || b.getBoundingClientRect().right > right + .5) { full = true; b.hidden = true; } }
+    return !full;
+  };
+  chip.classList.remove('squeezed');
+  if (!fit() && getComputedStyle(chip).display !== 'none') { chip.classList.add('squeezed'); fit(); }
+  strip.hidden = !strip.firstChild || getComputedStyle(chip).display !== 'none';   // stripa vises bare når været ikke står i topplinjen
 }
 function renderTop() {
-  const tabs = $('tabsIn'), left = tabs.scrollLeft;
-  tabs.innerHTML = [...SECTIONS, { id: 'kasse', label: 'Åpen kasse' }].map((t) =>
-    `<button data-sec="${t.id}"${t.id === 'kasse' ? ' class="t-kasse"' : ''} aria-current="${!state.category && t.id === state.section}">${t.label}</button>`).join('');
-  tabs.scrollLeft = left;
-  const on = tabs.querySelector('[aria-current="true"]');   // sørg for at den valgte fanen er synlig
-  if (on && (on.offsetLeft < tabs.scrollLeft || on.offsetLeft + on.offsetWidth > tabs.scrollLeft + tabs.clientWidth - 30)) tabs.scrollLeft = Math.max(0, on.offsetLeft - 16);
+  $('tabs').innerHTML = SECTIONS.map((t) => `<button data-sec="${t.id}" aria-current="${!state.category && t.id === state.section}">${t.label}</button>`).join('');
   const { pot } = kasseSum();
-  const has = state.kasse.rows && pot >= 1;
-  $('potPill').innerHTML = `<span class="ic">${ICON.hjerte}</span><span>${has ? `<b>${krFmt(Math.floor(pot))} kr</b><small>til lokale lag</small>` : '<b>Åpen kasse</b><small>se regnskapet</small>'}</span>`;
-  $('potPill').setAttribute('aria-label', has ? `Åpen kasse: ${krFmt(Math.floor(pot))} kr til lokale lag` : 'Åpen kasse: se regnskapet');
-  const today = state.section === 'forsiden' && !state.category ? todayHtml() : '';
-  $('today').hidden = !today; $('today').innerHTML = today ? `<div><p>${today}</p></div>` : '';
+  const has = state.kasse.rows && pot >= 1, pill = $('potPill');
+  pill.innerHTML = `<span class="ic">${ICON.hjerte}</span><span>${has ? `<b>${krFmt(Math.floor(pot))} kr</b><small>til lokale lag</small>` : '<b>Åpen kasse</b><small>se regnskapet</small>'}</span>`;
+  pill.setAttribute('aria-label', has ? `Åpen kasse: ${krFmt(Math.floor(pot))} kr til lokale lag` : 'Åpen kasse: se regnskapet');
+  pill.setAttribute('aria-current', state.section === 'kasse');
+  const wx = wxToday(), chip = $('wxTop'), strip = $('today'), front = state.section === 'forsiden' && !state.category;
+  chip.hidden = !wx;
+  if (wx) { chip.href = wx.url; chip.innerHTML = `${wx.icon} ${wx.temp} <span>${esc(wx.name)}</span>`; chip.setAttribute('aria-label', `Været i ${wx.name} i dag: ${wx.temp}. Åpner yr.no`); }
+  strip.innerHTML = wx && front ? `<div><p><a href="${wx.url}" target="_blank" rel="noopener" aria-label="Været i ${esc(wx.name)} i dag: ${wx.temp}. Åpner yr.no">${wx.icon} <b>${esc(wx.name)}</b> i dag: ${wx.temp}</a><button data-place>Bytt sted</button></p></div>` : '';
+  fitTabs();
 }
 
 // ---------- Åpen kasse: siden ----------
@@ -1317,7 +1333,6 @@ function go(patch) {
   Object.assign(state, patch); savePrefs();
   const want = state.section === 'kasse' ? '#kasse' : '';   // Åpen kasse har egen adresse, så siden kan deles og tilbake-knappen virker
   if (location.hash !== want) history.pushState(null, '', want || location.pathname + location.search);
-  document.body.classList.remove('tabs-up');
   render(); window.scrollTo({ top: 0 });
 }
 addEventListener('popstate', () => {
@@ -1325,15 +1340,6 @@ addEventListener('popstate', () => {
   if (kasse === (state.section === 'kasse')) return;
   state.section = kasse ? 'kasse' : 'forsiden'; state.category = null; render(); window.scrollTo({ top: 0 });
 });
-// Fanene glir unna når man blar nedover, og kommer tilbake når man blar opp
-let lastY = 0;
-addEventListener('scroll', () => {
-  const y = window.scrollY;
-  if (Math.abs(y - lastY) < 8) return;
-  document.body.classList.toggle('tabs-up', y > lastY && y > 160);
-  lastY = y;
-}, { passive: true });
-
 $('openMenu').addEventListener('click', () => setMenu(true));
 $('closeMenu').addEventListener('click', () => setMenu(false));
 $('scrim').addEventListener('click', () => setMenu(false));
@@ -1406,6 +1412,7 @@ document.addEventListener('click', (e) => {
   if (d.srcToggle) { srcOff.has(d.srcToggle) ? srcOff.delete(d.srcToggle) : srcOff.add(d.srcToggle); saveSrc(); render(); return; }
   if (d.srcAll) { if (d.srcAll === 'on') srcOff.clear(); else state.items.forEach((it) => srcOff.add(it.source)); saveSrc(); render(); return; }
   if ('joinMore' in d) { $('joinDone').outerHTML = joinFormHtml(); return; }
+  if ('place' in d) { setMenu(true); $('regionSel').focus(); return; }   // «Bytt sted» i værstripa åpner menyen på «Mitt område»
   if (d.sec) go({ section: d.sec, category: null });
   else if (d.cat) go({ category: d.cat });
   else if (d.strict) go({ minScore: Number(d.strict) });
