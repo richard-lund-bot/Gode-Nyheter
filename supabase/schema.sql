@@ -140,3 +140,49 @@ insert into public.spots (region, url, name) values
   ('drammen', 'https://ut.no/turforslag/117212', 'Bragernes–Kjøsterud over Landfallhytta'),
   ('drammen', 'https://www.ut.no/turforslag/1114463', 'Gatekunstvandring på Strømsø')
 on conflict (region, url) do nothing;
+
+-- v1.8: Databasen starter innsamlingsjobben hver halvtime.
+-- GitHubs egen tidsplan viste seg upålitelig, så Supabase ber GitHub kjøre «Hent gode nyheter» via GitHubs API.
+-- Krever en GitHub-nøkkel (fine-grained, bare dette repoet, Actions: Read and write) lagret i Vault
+-- under navnet github_dispatch_token. Uten nøkkelen gjør jobben ingenting.
+create extension if not exists pg_cron with schema pg_catalog;
+create extension if not exists pg_net with schema extensions;
+
+create schema if not exists private;   -- ikke tilgjengelig gjennom nettsidens API
+revoke all on schema private from public, anon, authenticated;
+
+create or replace function private.start_news_job()
+returns bigint
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  token text;
+  request_id bigint;
+begin
+  select decrypted_secret into token from vault.decrypted_secrets where name = 'github_dispatch_token';
+  if token is null or length(trim(token)) = 0 then
+    raise warning 'Gode nyheter: github_dispatch_token mangler i Vault – jobben ble ikke startet';
+    return null;
+  end if;
+  select net.http_post(
+    url := 'https://api.github.com/repos/richard-lund-bot/Gode-Nyheter/actions/workflows/fetch.yml/dispatches',
+    body := jsonb_build_object('ref', 'main'),
+    headers := jsonb_build_object(
+      'Authorization', 'Bearer ' || trim(token),
+      'Accept', 'application/vnd.github+json',
+      'X-GitHub-Api-Version', '2022-11-28',
+      'Content-Type', 'application/json',
+      'User-Agent', 'gode-nyheter-supabase-cron'),
+    timeout_milliseconds := 10000
+  ) into request_id;
+  return request_id;
+end
+$$;
+revoke all on function private.start_news_job() from public, anon, authenticated;
+
+-- Kl. :22 og :52 hver time (UTC). GitHubs egen tidsplan (:07 og :37) står som reserve.
+select cron.schedule('gode-nyheter-hent', '22,52 * * * *', $cron$select private.start_news_job()$cron$);
+-- Rydd i loggen over cron-kjøringer én gang i døgnet
+select cron.schedule('gode-nyheter-rydd-cronlogg', '15 3 * * *', $cron$delete from cron.job_run_details where end_time < now() - interval '7 days'$cron$);
