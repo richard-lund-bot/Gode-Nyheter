@@ -1375,12 +1375,9 @@ $('placeList').addEventListener('click', (e) => {
   const r = REGIONS.find((x) => x.id === e.target.closest('[data-pick]')?.dataset.pick);
   if (r) pickPlace(r, `Ditt område: ${r.name}.`);
 });
-$('placeFind').addEventListener('click', () => {
-  const msg = $('placeMsg');
-  if (!navigator.geolocation) { msg.textContent = 'Posisjon er ikke tilgjengelig her. Velg område under.'; return; }
-  msg.textContent = 'Søker …';
-  navigator.geolocation.getCurrentPosition(({ coords }) => { const r = nearestRegion(coords.latitude, coords.longitude); pickPlace(r, `Nærmeste område: ${r.name}.`); },
-    () => { msg.textContent = 'Fikk ikke tilgang til posisjon. Velg område under.'; }, { maximumAge: 600000, timeout: 10000 });
+$('placeFind').addEventListener('click', async () => {
+  const c = await findPosition((text) => { $('placeMsg').textContent = text; }, 'Du kan velge område under.');
+  if (c) { const r = nearestRegion(c.latitude, c.longitude); pickPlace(r, `Nærmeste område: ${r.name}.`); }
 });
 
 // ---------- Hendelser ----------
@@ -1432,14 +1429,28 @@ $('postForm').addEventListener('submit', async (e) => {
     $('postnr').value = '';
   } catch { hint.textContent = 'Fant ikke postnummeret.'; }
 });
-function locateRegion() {
-  const hint = $('locHint');
-  if (!navigator.geolocation) { hint.textContent = 'Posisjon er ikke tilgjengelig.'; return; }
-  hint.textContent = 'Søker …';
-  navigator.geolocation.getCurrentPosition(async ({ coords }) => {
-    const r = nearestRegion(coords.latitude, coords.longitude);
-    await setRegion(r, `Nærmeste område: ${r.name}.`);
-  }, () => { hint.textContent = 'Fikk ikke tilgang til posisjon.'; }, { maximumAge: 600000, timeout: 10000 });
+// Ber enheten om posisjon og gir koordinatene, eller null. say() får beskjeder underveis, alt er rådet som følger en feil.
+// Feilene holdes fra hverandre, for rådet er forskjellig: nettleseren har ikke lov, enheten fant ingenting, eller det tok for lang tid.
+// Første forsøk er raskt og grovt (nett og mobilmaster). Gir det ingenting, prøver vi én gang til med GPS.
+let locating = null;
+function findPosition(say, alt) {
+  if (locating) return locating;   // ett søk om gangen, også ved flere trykk
+  if (!navigator.geolocation) { say(`Denne nettleseren kan ikke gi posisjon. ${alt}`); return Promise.resolve(null); }
+  const why = { 1: 'Nettleseren får ikke bruke posisjonen din. Sjekk at stedstjenester er slått på for nettleseren i innstillingene på enheten.',
+    2: 'Enheten fant ikke posisjonen akkurat nå.', 3: 'Det tok for lang tid å finne posisjonen.' };
+  locating = new Promise((done) => {
+    const ask = (opts, again) => navigator.geolocation.getCurrentPosition(({ coords }) => done(coords), (e) => {
+      if (again && e.code !== 1) { say('Søker fortsatt …'); return ask({ enableHighAccuracy: true, maximumAge: 600000, timeout: 20000 }, false); }
+      say(`${why[e.code] || why[2]} ${alt}`); done(null);
+    }, opts);
+    say('Søker …');
+    ask({ maximumAge: 600000, timeout: 8000 }, true);
+  }).finally(() => { locating = null; });
+  return locating;
+}
+async function locateRegion() {
+  const c = await findPosition((text) => { $('locHint').textContent = text; }, 'Du kan velge område i lista eller bruke postnummer.');
+  if (c) { const r = nearestRegion(c.latitude, c.longitude); await setRegion(r, `Nærmeste område: ${r.name}.`); }
 }
 
 document.addEventListener('click', (e) => {
