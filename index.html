@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="no" data-theme="auto">
+<html lang="nb" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -10,6 +10,8 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
 <style>
+  /* Overskriftsskrift: Source Serif 4 Black (SIL Open Font License, se fonts/OFL.txt) */
+  @font-face { font-family: "GN Serif"; src: url("fonts/source-serif-4-latin-900.woff2") format("woff2"); font-weight: 900; font-style: normal; font-display: swap; }
   :root {
     --bg: #f1eee8; --card: #ffffff; --ink: #1b1916; --muted: #6f675d; --line: #e4ded4; --well: #e9e5dd;
     --brand: #2f5d43; --sun: #f2b544;
@@ -20,10 +22,7 @@
     --m-hjerte: #d23e5d; --m-hjerte-bg: #c23c58;
     --head: "Avenir Next Condensed", "Roboto Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
     --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) { --bg: #121210; --card: #1d1c19; --ink: #f1ece4; --muted: #a39a8d; --line: #2e2c28; --well: #26241f;
-      --brand: #24432f; --m-sol: #f2b544; --m-lys: #6cc48c; --m-los: #79a8f2; --m-hjerte: #f07d95; }
+    --news: "GN Serif", Georgia, "Times New Roman", serif;   /* sakenes overskrifter */
   }
   :root[data-theme="dark"] { --bg: #121210; --card: #1d1c19; --ink: #f1ece4; --muted: #a39a8d; --line: #2e2c28; --well: #26241f;
       --brand: #24432f; --m-sol: #f2b544; --m-lys: #6cc48c; --m-los: #79a8f2; --m-hjerte: #f07d95; }
@@ -47,7 +46,6 @@
   .top .gn i { color: var(--sun); }
   .gn svg { position: absolute; top: -5px; right: -4px; width: 16px; height: 16px; fill: currentColor; stroke: currentColor; }
   .drawer-head .gn { color: var(--brand); }
-  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .drawer-head .gn, :root:not([data-theme="light"]) footer .gn { color: var(--ink); } }
   :root[data-theme="dark"] .drawer-head .gn, :root[data-theme="dark"] footer .gn { color: var(--ink); }
   .strip { background: var(--card); border-bottom: 1px solid var(--line); position: sticky; top: calc(54px + env(safe-area-inset-top)); z-index: 19; }
   .strip nav { max-width: 980px; margin: 0 auto; display: flex; gap: 2px; overflow-x: auto; padding: 0 8px; scrollbar-width: none; }
@@ -103,11 +101,17 @@
   .accent { position: absolute; left: 0; right: 0; bottom: 0; height: 4px; z-index: 1; }
   .badge { position: absolute; left: 10px; top: 10px; display: flex; align-items: center; gap: 5px; padding: 4px 9px 4px 7px; border-radius: 99px;
            font: 700 .72rem var(--sans); color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.25); z-index: 1; }
-  .body { padding: 10px 14px 12px; }
-  .t { font: 800 1.5rem/1.06 var(--head); margin: 0; }
-  .kicker { color: var(--mc); }
-  .sum { margin: 7px 0 0; font-size: .95rem; opacity: .85; }
-  .meta { margin-top: 8px; font-size: .75rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: 2px 6px; align-items: center; }
+  .body { padding: 12px 14px 14px; }
+  /* Overskrifter i kraftig avisskrift. Stikkordet står på egen linje over. Titler med «fit» strekkes av
+     fitTitles() så hver linje fyller kortbredden; størrelsene under gjelder til det har skjedd, og for resten. */
+  .kick { font: 900 1.05rem/1.15 var(--news); color: var(--mc); margin: 0 0 4px; }
+  .t { font: 900 1.6rem/1.05 var(--news); letter-spacing: -.012em; margin: 0; text-wrap: balance;
+       /* veldig lange ord deles med bindestrek (nettleserens norske orddeling) i stedet for midt i ordet */
+       overflow-wrap: break-word; hyphens: auto; hyphenate-limit-chars: 14 6 6; -webkit-hyphenate-limit-before: 6; -webkit-hyphenate-limit-after: 6; }
+  .t.fit span { display: block; white-space: nowrap; line-height: 1.03; }
+  .pair .t.fit span { line-height: 1.08; }
+  .sum { margin: 10px 0 0; font-size: 1.08rem; line-height: 1.4; opacity: .88; }
+  .meta { margin-top: 10px; font-size: .8rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: 2px 6px; align-items: center; }
   .meta span { white-space: nowrap; }
   .meta .region { font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--mc); }
   .glad { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; border: 1.5px solid var(--line); background: var(--card);
@@ -116,32 +120,38 @@
   .glad.pop { animation: pop .35s ease; }
   @keyframes pop { 50% { transform: scale(1.25); } }
 
-  .hero .ph { aspect-ratio: 4 / 3; }
-  .hero .t { font-size: 2.2rem; line-height: 1.0; }
-  .hero .body { padding: 12px 14px 16px; }
-  .bigfull .t { font-size: 1.85rem; }
+  .hero .ph { aspect-ratio: 3 / 2; }
+  .hero .kick { font-size: 1.3rem; }
+  .hero .t { font-size: 2.5rem; line-height: 1; }
+  .hero .sum { font-size: 1.15rem; }
+  .hero .body { padding: 14px 16px 18px; }
+  .bigfull .kick { font-size: 1.15rem; }
+  .bigfull .t { font-size: 2.1rem; }
   .overlay .ph { aspect-ratio: 4 / 5; }
-  .overlay .over { position: absolute; inset: auto 0 0 0; padding: 70px 16px 16px; color: #fff; background: linear-gradient(transparent, rgba(0,0,0,.82)); }
-  .overlay .t { font-size: 2rem; }
-  .overlay .kicker, .overlay .meta .region { color: var(--sun); }
+  .overlay .over { position: absolute; inset: auto 0 0 0; padding: 80px 16px 16px; color: #fff; background: linear-gradient(transparent, rgba(0,0,0,.85)); }
+  .overlay .t { font-size: 2.2rem; }
+  .overlay .kick, .overlay .meta .region { color: var(--sun); }
   .overlay .meta { color: rgba(255,255,255,.8); }
   .overlay .glad { background: rgba(0,0,0,.35); border-color: rgba(255,255,255,.35); color: #fff; }
   .overlay .credit { bottom: auto; top: 8px; }
   .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .pair .ph { aspect-ratio: 1 / 1; }
-  .pair .body { padding: 8px 10px 10px; }
-  .pair .t { font-size: 1.12rem; line-height: 1.1; }
+  .pair .ph { aspect-ratio: 5 / 4; }
+  .pair .body { padding: 9px 10px 11px; }
+  .pair .kick { font-size: .9rem; margin-bottom: 2px; }
+  .pair .t { font-size: 1.25rem; line-height: 1.06; }
   .pair .badge { left: 6px; top: 6px; font-size: .66rem; }
-  .row { display: grid; grid-template-columns: 1fr 116px; border-left: 5px solid var(--mc); }
-  .row .ph { aspect-ratio: auto; height: 100%; min-height: 108px; grid-column: 2; grid-row: 1; }
+  .row { display: grid; grid-template-columns: 1fr 128px; border-left: 5px solid var(--mc); }
+  .row .ph { aspect-ratio: auto; height: 100%; min-height: 118px; grid-column: 2; grid-row: 1; }
   .row .credit, .pair .credit { display: none; }
   .row .ph::after { font-size: .85rem; left: 8px; bottom: 6px; }
-  .row .body { grid-column: 1; grid-row: 1; padding: 11px 12px 11px 12px; }
-  .row .t { font-size: 1.15rem; line-height: 1.1; }
+  .row .body { grid-column: 1; grid-row: 1; padding: 11px 12px 12px; }
+  .row .kick, .line .kick { font-size: .92rem; margin-bottom: 2px; }
+  .row .t { font-size: 1.3rem; line-height: 1.08; }
   .textcard { background: var(--mbg); color: #fff; padding: 20px 18px 16px; }
   .textcard.m-sol { color: #2e1f00; }
-  .textcard .t { font-size: 2rem; line-height: 1.02; }
-  .textcard .kicker, .textcard .meta, .textcard .meta .region { color: inherit; opacity: .9; }
+  .textcard .kick { font-size: 1.15rem; }
+  .textcard .t { font-size: 2.2rem; line-height: 1.02; }
+  .textcard .kick, .textcard .meta, .textcard .meta .region { color: inherit; opacity: .9; }
   .textcard .sum { opacity: .9; }
   .textcard .tc-top { display: flex; align-items: center; gap: 8px; font: 700 .75rem var(--sans); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; opacity: .9; }
   .textcard .glad { background: rgba(255,255,255,.2); border-color: transparent; color: inherit; }
@@ -212,7 +222,7 @@
   .line { border-left: 5px solid var(--mc); }
   .line + .line { border-top: 1px solid var(--line); }
   .line .body { padding: 10px 12px 11px; }
-  .line .t { font-size: 1.15rem; line-height: 1.12; }
+  .line .t { font-size: 1.3rem; line-height: 1.1; }
   /* Bildet lot seg ikke laste: skjul bildeflaten i stedet for å vise en tom boks */
   .card.noimg .ph { display: none; }
   .row.noimg { grid-template-columns: 1fr; }
@@ -247,8 +257,8 @@
   .sun { border-radius: 10px; box-shadow: 0 6px 24px rgba(201,132,0,.35); border: 3px solid #fff3cf; }
   .sun-label { display: flex; align-items: center; gap: 7px; padding: 9px 14px; background: #2e1f00; color: #f6c453;
                font: 800 .8rem var(--sans); text-transform: uppercase; letter-spacing: .08em; }
-  .sun .t { font-size: 2.2rem; line-height: 1.02; }
-  .sun .kicker { color: #c98400; }
+  .sun .t { font-size: 2.4rem; line-height: 1.02; }
+  .sun .kick { color: #c98400; font-size: 1.25rem; }
   @media (min-width: 760px) { .sun-wrap { grid-column: 1 / -1; padding: 10px 0 0; } }
 
   /* Fellestur */
@@ -285,7 +295,7 @@
   .top5 ol { list-style: none; margin: 0; padding: 0; counter-reset: n; }
   .top5 li a { display: grid; grid-template-columns: 34px 1fr auto; gap: 8px; align-items: center; padding: 9px 0; border-top: 1px solid var(--line); }
   .top5 li a::before { counter-increment: n; content: counter(n); font: 800 1.6rem/1 var(--head); color: var(--m-sol); }
-  .top5 .tt { font: 700 .98rem/1.2 var(--head); }
+  .top5 .tt { font: 900 1.08rem/1.2 var(--news); }
   .top5 .n { font-size: .75rem; color: var(--muted); white-space: nowrap; }
 
   /* Annonser */
@@ -323,13 +333,17 @@
     .feed { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: row dense; }
     .feed > .hero, .feed > .text-wrap, .feed > .pair, .feed > .ad-wrap, .feed > .mix, .feed > .overlay-wrap { grid-column: 1 / -1; }
     .inset { margin: 0; }
-    .hero { display: grid; grid-template-columns: 1.6fr 1fr; border-radius: 6px; }
-    .hero .ph { aspect-ratio: auto; min-height: 400px; }
-    .hero .body { padding: 22px; align-self: center; }
-    .hero .t { font-size: 2.7rem; }
-    .pair .ph { aspect-ratio: 16 / 10; }
-    .pair .t { font-size: 1.35rem; }
-    .overlay .ph { aspect-ratio: 21 / 9; }
+    .hero { border-radius: 6px; }
+    .hero .ph { aspect-ratio: 2 / 1; }
+    .hero .body { padding: 20px 24px 24px; }
+    .hero .kick, .sun .kick { font-size: 1.6rem; }
+    .hero .t { font-size: 3.4rem; }
+    .hero .sum { font-size: 1.3rem; }
+    .bigfull .kick, .textcard .kick { font-size: 1.3rem; }
+    .pair .kick { font-size: 1.1rem; }
+    .pair .body { padding: 12px 14px 14px; }
+    .pair .t { font-size: 1.7rem; }
+    .overlay .ph { aspect-ratio: 16 / 9; }
     .mix, .card { border-radius: 6px; }
   }
 </style>
@@ -469,16 +483,17 @@ const inSection = (it, id) => id === 'forsiden' || (id === 'idrett' ? it.categor
 const STRICT = [
   { v: 6, label: 'Alle' }, { v: 7, label: 'Normal' }, { v: 8, label: 'Streng' }, { v: 9, label: 'Strengest' },
 ];
-const THEMES = [{ v: 'auto', label: 'Auto' }, { v: 'light', label: 'Lyst' }, { v: 'dark', label: 'Mørkt' }];
+const THEMES = [{ v: 'light', label: 'Lyst' }, { v: 'dark', label: 'Mørkt' }];   // aldri automatisk – leseren velger selv
 const REGION_LABEL = { lokalt: 'Lokalt', norge: 'Norge', verden: 'Verden' };
 
 // ---------- Tilstand ----------
-const state = { section: 'forsiden', category: null, region: 'drammen', events: [], minScore: 7, theme: 'auto', items: [], demo: false };
+const state = { section: 'forsiden', category: null, region: 'drammen', events: [], minScore: 7, theme: 'light', items: [], demo: false };
 const store = {
   get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
 };
 Object.assign(state, store.get('gn-prefs', {}), { category: null });
+if (!THEMES.some((t) => t.v === state.theme)) state.theme = 'light';   // eldre besøk kan ha lagret «auto»
 document.documentElement.dataset.theme = state.theme;
 const gladSet = new Set(store.get('gn-glad', []));
 const savePrefs = () => store.set('gn-prefs', { section: state.section, minScore: state.minScore, theme: state.theme, region: state.region });
@@ -679,8 +694,10 @@ function fitSources() {
     if (hidden) { plus.hidden = false; plus.textContent = `${hidden} til`; plus.setAttribute('aria-label', `Vis ${hidden} aviser til`); }
   });
 }
-addEventListener('resize', () => requestAnimationFrame(fitSources));
-const title = (it) => `<h2 class="t">${it.kicker ? `<span class="kicker">${esc(it.kicker)}</span> ` : ''}${esc(it.title_no)}</h2>`;
+addEventListener('resize', () => requestAnimationFrame(() => { fitSources(); fitTitles(); }));
+// Stikkordet på egen linje, tittelen under. «fit» (hero, big eller pair) gjør at fitTitles() strekker linjene til kortbredden.
+const title = (it, fit) => `${it.kicker ? `<div class="kick">${esc(it.kicker)}</div>` : ''}`
+  + `<h2 class="t${fit ? ' fit' : ''}"${fit ? ` data-fit="${fit}" data-t="${esc(it.title_no)}" aria-label="${esc(it.title_no)}"` : ''}>${esc(it.title_no)}</h2>`;
 const gladBtn = (it) => { const on = gladSet.has(String(it.id)); return `<button class="glad${on ? ' on' : ''}" data-glad="${esc(it.id)}" aria-label="Dette gledet meg">${ICON.sol}<span>${it.glad_count || 0}</span></button>`; };
 const meta = (it, short) => {
   const multi = it.sources.length > 1, one = it.sources[0];
@@ -695,16 +712,74 @@ const meta = (it, short) => {
 const card = (it, cls, inner) => `<a class="card ${cls}" href="${esc(it.url)}" target="_blank" rel="noopener" style="--mc:${MOODS[mood(it)].c};--mbg:${MOODS[mood(it)].bg}">${inner}</a>`;
 const sum = (it) => it.summary_no ? `<p class="sum">${esc(it.summary_no)}</p>` : '';
 
+// ---------- Overskrifter som fyller kortbredden ----------
+// Som på en avisforside: tittelen deles på noen få linjer, og hver linje får skriftstørrelsen som fyller bredden.
+//   lines = høyst så mange linjer
+//   share = ønsket minste skriftstørrelse som andel av kortbredden (men aldri mer enn «top» piksler) – nås den ikke, tar vi en linje til
+//   max   = største skriftstørrelse i piksler, ratio = hvor mye større en kort linje kan bli enn den minste linja
+const FIT = {
+  hero: { lines: 4, share: .115, top: 64, max: 104, ratio: 1.75 },
+  big:  { lines: 4, share: .105, top: 52, max: 84,  ratio: 1.5 },
+  pair: { lines: 5, share: .15,  top: 40, max: 60,  ratio: 1.25 },
+};
+const FIT_MIN = 17;                   // blir skriften mindre enn dette, brytes tittelen som vanlig tekst i stedet
+const fitCtx = document.createElement('canvas').getContext('2d');
+const wordW = new Map();              // ordbredder ved 100 px skrift (tømmes når skriften er lastet)
+function widthOf(word) {
+  let w = wordW.get(word);
+  if (w == null) { fitCtx.font = '900 100px "GN Serif", Georgia, "Times New Roman", serif'; w = fitCtx.measureText(word).width; wordW.set(word, w); }
+  return w;
+}
+// Deler ordene på n linjer: den bredeste linja skal være smalest mulig, og blant omtrent like gode delinger velges den jevneste
+function splitEven(ws, n) {
+  const sp = widthOf(' '), all = [];
+  (function rec(start, left, acc) {
+    if (left === 1) {
+      const lines = [...acc, ws.slice(start)];
+      const w = lines.map((l) => l.reduce((sum, x) => sum + x.w, 0) + sp * (l.length - 1));
+      all.push({ lines, w, widest: Math.max(...w), narrowest: Math.min(...w) });
+      return;
+    }
+    for (let end = start + 1; end <= ws.length - (left - 1); end++) rec(end, left - 1, [...acc, ws.slice(start, end)]);
+  })(0, n, []);
+  const least = Math.min(...all.map((c) => c.widest));
+  const best = all.filter((c) => c.widest <= least * 1.05).sort((x, y) => y.narrowest - x.narrowest)[0];
+  return { lines: best.lines.map((l) => l.map((x) => x.t).join(' ')), w: best.w, widest: best.widest };
+}
+function fitTitles() {
+  document.querySelectorAll('.t.fit').forEach((el) => {
+    const W = el.clientWidth, cfg = FIT[el.dataset.fit];
+    if (!W || !cfg) return;
+    const ws = el.dataset.t.split(/\s+/).filter(Boolean).map((t) => ({ t, w: widthOf(t) }));
+    if (!ws.length) return;
+    const size = (w) => 98 * W / w;   // 98 i stedet for 100 gir litt luft, så ingen linje stikker ut
+    const want = Math.min(W * cfg.share, cfg.top);
+    let pick = null;
+    for (let n = 1; n <= Math.min(cfg.lines, ws.length); n++) {
+      const next = splitEven(ws, n);
+      if (pick && next.widest > pick.widest * .96) break;   // en linje til hjelper ikke (ett langt ord bestemmer)
+      pick = next;
+      if (size(pick.widest) >= want) break;                 // stor nok – ikke flere linjer enn nødvendig
+    }
+    const smallest = size(pick.widest);
+    if (smallest < FIT_MIN) { el.textContent = el.dataset.t; return; }   // for lang tittel: vanlig tekst som brytes selv
+    const cap = Math.min(cfg.max, smallest * cfg.ratio);                  // en kort linje skal ikke bli enorm
+    el.innerHTML = pick.lines.map((l, i) => `<span style="font-size:${Math.min(size(pick.w[i]), cap).toFixed(1)}px">${esc(l)}</span>`).join(' ');   // mellomrommet holder teksten hel ved søk og kopiering
+  });
+}
+// Skriften lastes etter første tegning; mål på nytt når den er på plass
+document.fonts?.load('900 100px "GN Serif"').then(() => { wordW.clear(); fitTitles(); }).catch(() => {});
+
 // Festet sak – ligger øverst en periode (gullramme, ingen etikett)
-const sunCard = (it) => `<div class="sun-wrap">${card(it, 'sun', `${noImg(it) ? '' : photo(it, false)}<div class="body">${title(it)}${sum(it)}${meta(it)}</div>`)}</div>`;
+const sunCard = (it) => `<div class="sun-wrap">${card(it, 'sun', `${noImg(it) ? '' : photo(it, false)}<div class="body">${title(it, 'hero')}${sum(it)}${meta(it)}</div>`)}</div>`;
 const L = {
-  hero:    (it) => card(it, 'hero', `${photo(it)}<div class="body">${title(it)}${sum(it)}${meta(it)}</div>`),
-  bigfull: (it) => card(it, 'bigfull', `${photo(it)}<div class="body">${title(it)}${meta(it)}</div>`),
-  big:     (it) => card(it, 'inset', `${photo(it)}<div class="body">${title(it)}${meta(it)}</div>`),
-  overlay: (it) => `<div class="overlay-wrap">${card(it, 'overlay', `${photo(it)}<div class="over">${title(it)}${meta(it)}</div>`)}</div>`,
+  hero:    (it) => card(it, 'hero', `${photo(it)}<div class="body">${title(it, 'hero')}${sum(it)}${meta(it)}</div>`),
+  bigfull: (it) => card(it, 'bigfull', `${photo(it)}<div class="body">${title(it, 'big')}${meta(it)}</div>`),
+  big:     (it) => card(it, 'inset', `${photo(it)}<div class="body">${title(it, 'big')}${meta(it)}</div>`),
+  overlay: (it) => `<div class="overlay-wrap">${card(it, 'overlay', `${photo(it)}<div class="over">${title(it, 'big')}${meta(it)}</div>`)}</div>`,
   row:     (it) => card(it, 'row inset', `${photo(it, false)}<div class="body">${title(it)}${meta(it, true)}</div>`),
-  text:    (it) => `<div class="text-wrap inset">${card(it, `textcard m-${mood(it)}`, `${title(it)}${sum(it)}${meta(it)}`)}</div>`,
-  pair:    (a, b) => `<div class="pair inset">${[a, b].map((it) => card(it, '', `${photo(it)}<div class="body">${title(it)}${meta(it, true)}</div>`)).join('')}</div>`,
+  text:    (it) => `<div class="text-wrap inset">${card(it, `textcard m-${mood(it)}`, `${title(it, 'big')}${sum(it)}${meta(it)}`)}</div>`,
+  pair:    (a, b) => `<div class="pair inset">${[a, b].map((it) => card(it, '', `${photo(it)}<div class="body">${title(it, 'pair')}${meta(it, true)}</div>`)).join('')}</div>`,
   line:    (it) => card(it, 'line', `<div class="body">${title(it)}${meta(it)}</div>`),   // sak uten bilde: ren overskrift
 };
 
@@ -1004,6 +1079,7 @@ function render() {
   const { pinned, list } = frontOrder(items);
   $('feed').innerHTML = items.length ? (pinned ? sunCard(pinned) : '') + layout(list, isFront)
     : `<div class="empty">${srcOff.size && srcOff.size >= allSrc.size ? 'Alle kilder er skjult.' : 'Ingen saker.'}</div>`;
+  fitTitles();
 }
 
 // ---------- Hendelser ----------
