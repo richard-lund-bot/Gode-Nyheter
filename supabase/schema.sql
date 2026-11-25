@@ -308,7 +308,8 @@ end $$;
 revoke all on function public.kasse_add_ai(numeric, numeric) from public, anon, authenticated;
 grant execute on function public.kasse_add_ai(numeric, numeric) to service_role;
 
--- Månedlig trekning. Står IKKE på tidsplan – kjøres for hånd:  select private.run_monthly_draw();
+-- Månedlig trekning. Går av seg selv den første i hver måned (se tidsplanen nederst).
+-- Kan også kjøres for hånd:  select private.run_monthly_draw();
 -- Potten er alt som er kommet inn minus alt som er gått ut til og med forrige måned.
 -- Er den under minstegrensen, skjer ingenting, og potten går videre til neste måned.
 create or replace function private.run_monthly_draw(p_min numeric default 500)
@@ -341,3 +342,7 @@ begin
   return 'trukket: ' || v_name;
 end $$;
 revoke all on function private.run_monthly_draw(numeric) from public, anon, authenticated;
+
+-- Trekningen den første i hver måned kl. 11:00 UTC (kl. 12 eller 13 norsk tid)
+select cron.unschedule(jobid) from cron.job where jobname = 'gode-nyheter-trekning';
+select cron.schedule('gode-nyheter-trekning', '0 11 1 * *', $$select private.run_monthly_draw();$$);

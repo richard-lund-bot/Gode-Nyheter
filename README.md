@@ -80,12 +80,12 @@ Slik gjør du det vanligste, i Supabase → Table Editor:
 
 - **Føre en inntekt eller kostnad:** `ledger` → Insert row. Fyll ut `kind` (`inn` eller `ut`), `title`, `amount` (kroner), `booked_on` (dato) og gjerne `note`.
 - **Godkjenne et lag:** `clubs` → sett `status` til `approved` (eller `rejected`). Kontaktinformasjonen står i `club_contacts`.
-- **Trekke en vinner:** SQL Editor → `select private.run_monthly_draw();`. Funksjonen trekker blant godkjente lag som ikke har vunnet de siste tolv månedene, og fører utbetalingen i regnskapet. Den gjør ingenting hvis potten er under 500 kr, eller hvis måneden allerede er trukket. Den står ikke på tidsplan.
+- **Trekningen går av seg selv** den første i hver måned kl. 11:00 UTC (kl. 12 eller 13 norsk tid). Den trekker blant godkjente lag som ikke har vunnet de siste tolv månedene, og fører utbetalingen i regnskapet. Den gjør ingenting hvis potten er under 500 kr, hvis ingen lag er med, eller hvis måneden allerede er trukket. Den kan også kjøres for hånd i SQL Editor: `select private.run_monthly_draw();`. Selve pengene må du overføre selv.
 - **Merke en utbetaling som gjort:** `draws` → fyll ut `paid_on` og eventuelt `receipt_url` (må begynne med `https://`).
 
 **AI-kostnaden føres av seg selv.** Innsamlingsjobben regner ut hva hver kjøring kostet (tokens og nettsøk, etter prislista i `scripts/kasse.mjs`), henter dollarkursen fra Norges Bank og legger beløpet til månedens linje «Kunstig intelligens». Det er et beregnet tall. Når fakturaen kommer, kan du rette beløpet på linja for en avsluttet måned. Jobben rører bare inneværende måned. Bytter du modell, må prisen legges inn i `scripts/kasse.mjs`, ellers blir kallene ikke ført (jobben sier fra i loggen).
 
-Reglene som står på siden, ligger øverst i `index.html` (`KASSE_MIN_POT`, `KASSE_PAUSE_MND`, `KASSE_GRATIS`) og i lista i `renderKasse()`. Endrer du minstegrensen, må den også sendes med til trekningen: `select private.run_monthly_draw(1000);`.
+Reglene som står på siden, ligger øverst i `index.html` (`KASSE_MIN_POT`, `KASSE_PAUSE_MND`, `KASSE_GRATIS`) og i lista i `renderKasse()`. Endrer du minstegrensen, må den også endres i tidsplanen for trekningen (`cron.schedule` nederst i `supabase/schema.sql`), for eksempel `select private.run_monthly_draw(1000);`.
 
 ## Store overskrifter og fast lyst utseende (v1.9)
 
