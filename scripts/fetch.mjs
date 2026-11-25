@@ -203,11 +203,15 @@ For hver sak, gi:
   ${REGIONS.map((r) => `"${r.id}" (${r.name})`).join(', ')}.
   Bruk område_hint som utgangspunkt, men velg ut fra hvor saken faktisk skjer (et søk på «Lier» kan gi en sak fra Drammen).
   Er area satt, skal region være "lokalt".
-- kicker: 1–2 konkrete ord foran tittelen i avisstil: sted, tema eller hovedperson (f.eks. "Lier:", "Forskning:", "Ski-VM:").
-  Ikke følelsesord eller vurderinger ("Hjertevarmt:", "Endelig:", "Gladnyhet:", "Rørende:"). Tom streng hvis ingenting passer.
-- title_no: fengende avistittel på norsk bokmål, maks 70 tegn, som får folk til å ville lese, men den skal være SANN.
-  Bruk aktive verb, konkrete detaljer, tall og steder når kilden har dem. Ingen spørsmålstitler, ingen «Du vil ikke tro …»,
-  ingen overdrivelser utover det kilden sier, og ikke gjenta kickerordet. Utenlandske saker skrives som norske titler.
+- kicker: 1–2 konkrete ord som står på en egen linje over tittelen, i avisstil: sted, tema eller hovedperson
+  (f.eks. "Lier:", "Forskning:", "Ski-VM:"). Ikke følelsesord eller vurderinger ("Hjertevarmt:", "Endelig:", "Gladnyhet:", "Rørende:").
+  Tom streng hvis ingenting passer.
+- title_no: kort, slagkraftig forsidetittel på norsk bokmål, slik de store nettavisene skriver dem: helst 3–7 ord og maks 45 tegn.
+  Tittelen vises med svært stor skrift, så hvert ord må telle. Start med det viktigste, bruk et aktivt verb, og ta med ett tall
+  når tallet er poenget («Fant 300 år gammel sølvskatt», «Reddet 14 hvaler fra garnet», «Yngst i verden over Atlanteren»).
+  Ikke gjenta stedet, temaet eller navnet som står i kicker, og ikke fyll på med bisetninger, årstall og forklaringer –
+  resten hører hjemme i sammendraget. Utenlandske saker skrives som norske titler.
+  Tittelen skal være SANN: ingen overdrivelser utover det kilden sier, ingen spørsmålstitler, ingen «Du vil ikke tro …».
   Unngå klisjeer og pyntord: «hjertevarm», «rørende», «magisk», «solskinnshistorie», «gladsak», «varmer hjertet», «til tårer».
   Skriv nøkternt og konkret – la fakta gjøre saken positiv.
 - summary_no: ditt EGET sammendrag på bokmål, én setning, maks 25 ord. Ikke kopier ingressen ordrett. Ikke overdriv utover det kilden sier.
@@ -221,7 +225,7 @@ For hver sak, gi:
 - same_as_i: Gjelder den samme hendelse som en TIDLIGERE sak i «nye» (lavere i), sett same_as_i til den i-en, ellers null.
 
 Svar KUN med en JSON-liste, samme rekkefølge og "i" som i «nye»:
-[{"i":0,"score":8,"tone":"positiv","category":"Natur og miljø","region":"lokalt","area":"drammen","kicker":"Endelig:","title_no":"…","summary_no":"…","must_see":false,"same_as":null,"same_as_i":null}]`;
+[{"i":0,"score":8,"tone":"positiv","category":"Natur og miljø","region":"lokalt","area":"drammen","kicker":"Drammenselva:","title_no":"…","summary_no":"…","must_see":false,"same_as":null,"same_as_i":null}]`;
 
 async function classifyBatch(batch, leads) {
   const payload = {

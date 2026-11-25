@@ -38,7 +38,7 @@ Uten nøkler viser `index.html` eksempelsaker, slik at du kan jobbe med designet
 ## Bilder og titler (v0.2)
 
 - Bildet hentes fra feeden (`media:content`, `media:thumbnail`, `enclosure`). For saker uten bilde slås `og:image` opp på artikkelsiden – også for saker fra Google Nyheter (se v1.7).
-- Claude skriver en fengende tittel og et stikkord (`kicker`, f.eks. «Endelig:»), men titlene skal fortsatt være sanne. Originaltittelen ligger i `original_title`.
+- Claude skriver en kort, fengende tittel og et stikkord (`kicker`, f.eks. «Lier:»), men titlene skal fortsatt være sanne. Originaltittelen ligger i `original_title`.
 - Har du allerede tabellen fra v0.1, kjører du `schema.sql` på nytt. Den legger til de nye kolonnene.
 - `SHOW_SOURCE_IMAGES = false` i `index.html` slår av kildebilder og bruker bare illustrasjoner.
 
@@ -56,6 +56,14 @@ Uten nøkler viser `index.html` eksempelsaker, slik at du kan jobbe med designet
   `update articles set category = 'Idrett' where category = 'Sport';`
 - Nye kilder: NRK Sport siste, BBC Sport og Google Nyheter-søk på Strømsgodset og Drammen-idrett.
 - Prompten slipper gjennom seire, rekorder, fair play, breddeidrett og mestring (7–9), men holder tap, skader, skandaler og overgangsrykter nede (maks 5).
+
+## Store overskrifter og fast lyst utseende (v1.9)
+
+- **Overskrifter som på en avisforside.** Sakenes overskrifter settes i en kraftig avisskrift (Source Serif 4 Black, ligger i `fonts/` og følger med siden – lisens i `fonts/OFL.txt`). I de store kortene deles tittelen på noen få linjer, og hver linje strekkes så den fyller kortbredden. Det gjør `fitTitles()` i `index.html`; innstillingene står i `FIT` (høyst antall linjer, ønsket størrelse og største størrelse per korttype). Blir en tittel for lang til å se bra ut, brytes den som vanlig tekst.
+- **Stikkordet står på egen linje** over tittelen, i sakens farge.
+- **Kortere titler.** Claude skriver nå korte forsidetitler (helst 3–7 ord, maks 45 tegn) i stedet for titler på opptil 70 tegn. Kravet om at tittelen skal være sann, står som før. Saker som allerede ligger i databasen, beholder den gamle tittelen til de går ut av forsiden etter noen dager.
+- **Større bilder og tekst.** Hovedsaken har bildet øverst i full bredde på alle skjermer, og ingress og tidslinje har større skrift.
+- **Aldri automatisk mørk modus.** Siden er lys for alle, også når telefonen står i mørk modus. Mørkt utseende velges i menyen (Lyst / Mørkt), og valget huskes. De som hadde «Auto» fra før, får lyst.
 
 ## Databasen starter jobben (v1.8)
 
