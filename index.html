@@ -340,6 +340,20 @@
   .native .sponsor { display: flex; align-items: center; gap: 8px; font: 700 .72rem var(--sans); text-transform: uppercase; letter-spacing: .06em; color: #8a5cf6; }
   .native .sponsor i { width: 22px; height: 22px; border-radius: 6px; background: #8a5cf6; display: grid; place-items: center; color: #fff; font-style: normal; font-size: .8rem; }
 
+  /* ---------- Første besøk: «Hvor bor du?» ---------- */
+  .place { border: 0; padding: 20px 18px calc(14px + env(safe-area-inset-bottom)); width: 100%; max-width: min(480px, 100%); margin: auto auto 0;
+           border-radius: 16px 16px 0 0; background: var(--card); color: var(--ink); box-shadow: 0 -8px 40px rgba(0,0,0,.3); }
+  .place::backdrop { background: rgba(0,0,0,.45); }
+  .place h2 { font: 900 1.8rem/1.05 var(--news); margin: 0 0 6px; }
+  .place p { margin: 0 0 14px; font-size: .95rem; line-height: 1.45; color: var(--muted); }
+  .place .k-knapp { width: 100%; }
+  .place .place-msg { margin: 10px 0 0; font-weight: 600; color: var(--ink); }
+  .place .place-msg:empty { display: none; }
+  .place-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 4px; }
+  .place-list button { border: 1px solid var(--line); background: var(--well); color: var(--ink); border-radius: 999px; padding: 10px 15px; font: 700 .95rem var(--sans); cursor: pointer; }
+  .place-skip { display: block; margin: 6px auto 0; border: 0; background: none; color: var(--muted); font: 600 .9rem var(--sans); padding: 10px 14px; cursor: pointer; text-decoration: underline; }
+  @media (min-width: 760px) { .place { margin: auto; border-radius: 16px; padding-bottom: 14px; } }
+
   /* ---------- Åpen kasse ---------- */
   .kasse { grid-column: 1 / -1; max-width: 720px; width: 100%; margin: 0 auto; padding: 18px 16px 10px; }
   .kasse .kick { font-size: 1.15rem; color: var(--brand); }
@@ -467,6 +481,15 @@
   <h3>Om</h3>
   <p class="about">Saker fra norske og utenlandske kilder, valgt og oppsummert av AI. Hele saken leses hos kilden. <span class="pl">+</span> betyr at saken krever abonnement hos den avisa.</p>
 </aside>
+
+<dialog class="place" id="placeDlg" aria-labelledby="placeTitle">
+  <h2 id="placeTitle">Hvor bor du?</h2>
+  <p>Da får du lokale nyheter, vær og turtips der du bor. Valget huskes på denne enheten, og du kan bytte når du vil.</p>
+  <button class="k-knapp" id="placeFind" type="button">📍 Finn nærmeste</button>
+  <p class="place-msg" id="placeMsg" role="status" aria-live="polite"></p>
+  <div class="place-list" id="placeList"></div>
+  <button class="place-skip" id="placeSkip" type="button">Ikke nå</button>
+</dialog>
 
 <main class="page">
   <div class="feed" id="feed"><div class="loading">Laster …</div></div>
@@ -1321,7 +1344,44 @@ function render() {
   $('feed').innerHTML = items.length ? (pinned ? sunCard(pinned) : '') + layout(list, isFront)
     : `<div class="empty">${srcOff.size && srcOff.size >= allSrc.size ? 'Alle kilder er skjult.' : 'Ingen saker.'}</div>`;
   fitTitles();
+  if (!placeAsked && !placeQueued && items.length) { placeQueued = true; setTimeout(askPlace, 800); }
 }
+
+// ---------- Første besøk: spør hvor leseren bor ----------
+// Spørsmålet stilles én gang per nettleser. Svaret – også «Ikke nå» – huskes, så det ikke kommer igjen der.
+// Den som allerede har valgt et annet område enn standarden, blir ikke spurt.
+let placeAsked = store.get('gn-place-asked', false) || state.region !== 'drammen', placeQueued = false;
+function askPlace() {
+  placeQueued = false;
+  const dlg = $('placeDlg');
+  // ikke i eksempelmodus, ikke oppå Åpen kasse eller menyen – da prøver vi igjen neste gang forsiden tegnes
+  if (placeAsked || state.demo || !dlg.showModal || dlg.open || state.section === 'kasse' || document.body.classList.contains('menu-open')) return;
+  $('placeList').innerHTML = REGIONS.map((r) => `<button type="button" data-pick="${esc(r.id)}">${esc(r.name)}</button>`).join('');
+  $('placeMsg').textContent = '';
+  dlg.showModal();
+}
+function placeDone() {
+  placeAsked = true; store.set('gn-place-asked', true);
+  if ($('placeDlg').open) $('placeDlg').close();
+}
+async function pickPlace(r, msg) { placeDone(); await setRegion(r, msg); render(); }   // tegn sakene på nytt: lokalt stoff fra det nye området kommer først
+$('placeDlg').addEventListener('close', placeDone);   // også Escape-tasten
+$('placeDlg').addEventListener('click', (e) => {      // trykk utenfor boksen
+  const b = e.currentTarget.getBoundingClientRect();
+  if (e.target === e.currentTarget && (e.clientX < b.left || e.clientX > b.right || e.clientY < b.top || e.clientY > b.bottom)) placeDone();
+});
+$('placeSkip').addEventListener('click', placeDone);
+$('placeList').addEventListener('click', (e) => {
+  const r = REGIONS.find((x) => x.id === e.target.closest('[data-pick]')?.dataset.pick);
+  if (r) pickPlace(r, `Ditt område: ${r.name}.`);
+});
+$('placeFind').addEventListener('click', () => {
+  const msg = $('placeMsg');
+  if (!navigator.geolocation) { msg.textContent = 'Posisjon er ikke tilgjengelig her. Velg område under.'; return; }
+  msg.textContent = 'Søker …';
+  navigator.geolocation.getCurrentPosition(({ coords }) => { const r = nearestRegion(coords.latitude, coords.longitude); pickPlace(r, `Nærmeste område: ${r.name}.`); },
+    () => { msg.textContent = 'Fikk ikke tilgang til posisjon. Velg område under.'; }, { maximumAge: 600000, timeout: 10000 });
+});
 
 // ---------- Hendelser ----------
 function setMenu(open) {
